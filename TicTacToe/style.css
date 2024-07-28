@@ -1,0 +1,148 @@
+body{
+    background-color: #548687;
+}
+.game_screen{
+    display: none;
+}
+.main-screen{
+    display: flex;
+    flex-direction: column;
+    translate: 160%;
+    width: 300px;
+    height: 300px;
+    gap:20px;
+}
+.player-button-single,.player-button-multi{
+    width: 300px;
+    height: 80px;
+    font-size: 20px;
+    font-weight: 500;
+    color: #b0413e;
+    background-color: #ffffc7;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.heading{
+    text-align: center;
+}
+.rows{
+    color: #b0413e;
+    background-color: #ffffc7;
+    height: 300px;
+    width: 300px;
+    display: flex;
+    transform: translate(160%);
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.position-0,.position-1,.position-2,.position-3,.position-4,.position-5,.position-6,
+.position-7,.position-8{
+    height: 33.33%;
+    font-size: 40px;
+    color:red;
+    width: 100px;
+    border: 1px solid #548687;
+    background-color: transparent;
+    border-radius: 4px;
+}
+
+.position-0,.position-1,.position-2{
+    border-top: 0px;
+}
+.position-0,.position-3,.position-6{
+    border-left: 0px;
+}
+.position-6,.position-7,.position-8{
+    border-bottom: 0px;
+}
+.position-2,.position-5,.position-8{
+    border-right: 0px;
+}
+.reset{
+    width: 200px;
+    height: 50px;
+    padding: 1rem;
+    font-size: 20px;
+    background-color: #191913;
+    color: #fff;
+    translate: 270%;
+    border-radius: 1rem;
+    border: none;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-content: center;
+}
+.new-game{
+    width: 200px;
+    height: 50px;
+    padding: 1rem;
+    font-size: 20px;
+    background-color: #191913;
+    color: #fff;
+    border-radius: 1rem;
+    border: none;
+    display:none;
+    translate: 270%;
+    justify-content: center;
+    align-content: center;
+}
+
+.winner{
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    animation:fire 1500ms alternate infinite;
+}
+@keyframes fire {
+    0% {
+      filter: contrast(120%);
+    }
+  
+    10% {
+      filter: contrast(130%);
+    }
+  
+    20% {
+      filter: contrast(240%);
+      text-shadow: 0 -3px 15px rgba(255, 193, 39, 0.4),
+        0 4px 20px rgba(153, 153, 153, 0.2);
+    }
+  
+    30% {
+      filter: contrast(220%);
+    }
+  
+    40% {
+      filter: contrast(250%);
+    }
+  
+    50% {
+      filter: contrast(310%);
+      text-shadow: 0 -2px 15px rgba(255, 193, 39, 0.4),
+        0 7px 9px rgba(153, 153, 153, 0.2);
+    }
+  
+    60% {
+      filter: contrast(150%);
+    }
+  
+    70% {
+      filter: contrast(220%);
+    }
+  
+    80% {
+      filter: contrast(360%);
+      text-shadow: 0 -5px 20px rgba(255, 193, 39, 0.4),
+        0 7px 27px rgba(153, 153, 153, 0.2);
+    }
+  
+    90% {
+      filter: contrast(250%);
+    }
+  
+    100% {
+      filter: contrast(180%);
+    }
+  }
