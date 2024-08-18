@@ -1,7 +1,5 @@
-//DOES NOT CHECK FOR PINS
-//CANNOT CAPTURE CHECK GIVING PIECE 
-function isCheck(colour){//does not check for pins still
-    //console.log('checking....');
+
+function isCheck(colour){
     let colourAttacker = null;
     if(colour == 'w'){//using to finding the colour of king
         colour = 'wK';
@@ -30,14 +28,12 @@ function isCheck(colour){//does not check for pins still
         else{
             valid = checkBlackPawnMove(initialFile,initialRank,kingPosition);
         }
-        //console.log('check complete');
         if(valid == true){
-            console.log('entered');
+            console.log('pawn check');
             return false;
         }
     }
 
-    // finalpos - kingpos initial pos- opp colour piece piece-colourAttacker
     if(colourAttacker[0] == 'b'){
         colourAttacker = 'bn';
     }
@@ -49,9 +45,8 @@ function isCheck(colour){//does not check for pins still
         let initialFile = knight.parentNode.id[0];
         let initialRank = parseInt(knight.parentNode.id[1]);
         let valid = checkKnightMove(initialFile,initialRank,kingPosition);
-        console.log('check complete');
         if(valid == true){
-            console.log('entered');
+            console.log('knight check');
             return false;
         }
     }
@@ -66,11 +61,9 @@ function isCheck(colour){//does not check for pins still
     for(let bishop of bishops){
         let initialFile = bishop.parentNode.id[0];
         let initialRank = parseInt(bishop.parentNode.id[1]);
-        //console.log(initialFile,initialRank,existingPiece,kingPosition,colourAttacker);
         let valid = checkBishopMove(initialFile,initialRank,kingPosition);
-        //console.log('check complete');
         if(valid == true){
-            console.log('entered');
+            console.log('bishop check');
             return false;
         }
     }
@@ -85,12 +78,9 @@ function isCheck(colour){//does not check for pins still
     for(let rook of rooks){
         let initialFile = rook.parentNode.id[0];
         let initialRank = parseInt(rook.parentNode.id[1]);
-        //console.log("initial",initialFile,initialRank);
-        //console.log("king position", kingPosition[0],parseInt(kingPosition[1]));
         let valid = checkRookMove(initialFile,initialRank,kingPosition);
-        //console.log('check complete');
         if(valid == true){
-            console.log('entered');
+            console.log('rook check');
             return false;
         }
     }
@@ -105,37 +95,24 @@ function isCheck(colour){//does not check for pins still
     for(let queen of queens){
         let initialFile = queen.parentNode.id[0];
         let initialRank = parseInt(queen.parentNode.id[1]);
-        //console.log("initial",initialFile,initialRank);
-        //console.log("king position", kingPosition[0],parseInt(kingPosition[1]));
         let valid = checkRookMove(initialFile,initialRank,kingPosition) || checkBishopMove(initialFile,initialRank,kingPosition);
-        //console.log('check complete');
         if(valid == true){
-            console.log('entered');
+            console.log('queen check');
             return false;
         }
     }
-
-    let kings = document.getElementsByClassName(colour);
-    for(let king of kings){
-        let initialFile = king.parentNode.id[0];
-        let initialRank = parseInt(king.parentNode.id[1]);
-        //console.log("initial",initialFile,initialRank);
-        //console.log("king position", kingPosition[0],parseInt(kingPosition[1]));
-        let valid = checkKingMove(initialFile,initialRank,kingPosition);
-        //console.log('check complete');
-        if(valid == true){
-            console.log('entered');
-            return false;
-        }
-    }
-
     return true;
 }
 
-function isValid(piece, initialPos, finalPos, target){//need to do solve what to do after check
+function isValid(piece, initialPos, finalPos, target){
     const initialFile = initialPos[0];// stores the alphabet of notation
     const initialRank = parseInt(initialPos[1]);//stores the number of notation
     const existingPiece = target.querySelector('.piece');
+    let finalId = '#'+finalPos;
+    let pieceOpp = document.body.querySelector(finalId).children;
+    if(pieceOpp.length != 0){
+        pieceOpp = pieceOpp[0].classList[1][0];
+    }
     if (initialPos === finalPos){
         return false;
     }
@@ -144,13 +121,9 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'wP':
             if (checkWhitePawnMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){
-                    console.log(existingPiece.classList[1][0],piece[0]);
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -165,13 +138,9 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'bp':
             if (checkBlackPawnMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){
-                    console.log(existingPiece.classList[1][0],piece[0]);
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -187,13 +156,9 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'br':
             if (checkRookMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){
-                    console.log(existingPiece.classList[1][0],piece[0]);
-                    if (existingPiece.classList[1][0] !== piece[0]){
+                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -203,20 +168,15 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
                 }
                 return true;
             }
-            console.log('in check');
             return false;
 
         case 'wB':
         case 'bb':
             if (checkBishopMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){
-                    console.log(existingPiece.classList[1][0],piece[0]);
-                    if (existingPiece.classList[1][0] !== piece[0]){
+                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -226,20 +186,15 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
                 }
                 return true;
             }
-            console.log('in check');
             return false;
 
         case 'wQ':
         case 'bq':
             if((checkRookMove(initialFile,initialRank,finalPos) || checkBishopMove(initialFile,initialRank,finalPos)) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){ 
-                    console.log(existingPiece.classList[1][0],piece[0]);
-                    if (existingPiece.classList[1][0] !== piece[0]){
+                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -255,13 +210,9 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'bn':
             if (checkKnightMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){
-                    console.log(existingPiece.classList[1][0],piece[0]);
-                    if (existingPiece.classList[1][0] !== piece[0]){
+                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -271,20 +222,15 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
                 }
                 return true;
             }
-            console.log('in check');
             return false;
             
         case 'wK':
         case 'bk':
             if (checkKingMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                console.log('entered');
-                console.log(existingPiece);
                 if(existingPiece){
-                    console.log(existingPiece.classList[1][0],piece[0]);
-                    if (existingPiece.classList[1][0] !== piece[0]){
+                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
                         if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            console.log('2');
                             existingPiece.remove();
                         }
                         return true;
@@ -294,7 +240,6 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
                 }
                 return true;
             }
-            console.log('in check');
             return false;
     }
     return false;
@@ -307,11 +252,11 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
         pieceOpp = pieceOpp[0].classList[1][0];
     }
     // pawn forward move by one
-    if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank - 1){
+    if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank - 1 && pieceOpp != 'w'){
         return true;
     }
     // double move on first turn
-    if (initialRank === 7 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 5){
+    if (initialRank === 7 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 5 && pieceOpp != 'w'){
         return true;
     }
     // capturing
@@ -319,7 +264,6 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
     && pieceOpp == 'w') {
         return true;
     }
-    console.log('1');
     return false;
 }
 
@@ -330,17 +274,16 @@ function checkWhitePawnMove(initialFile,initialRank,finalPos){
         pieceOpp = pieceOpp[0].classList[1][0];
     }
     // pawn forward move by one
-    if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank + 1){
+    if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank + 1 && pieceOpp != 'b'){
         return true;
     }
     // double move on first turn
-    if (initialRank === 2 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 4){
+    if (initialRank === 2 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 4 && pieceOpp != 'b'){
         return true;
     }
     // capturing
     if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1
      && pieceOpp == 'b'){
-        console.log('1');
         return true;
     }
     return false;
@@ -349,19 +292,18 @@ function checkWhitePawnMove(initialFile,initialRank,finalPos){
 function checkKnightMove(initialFile,initialRank,finalPos){
     const move =  [[2, 1], [2, -1], [-2, 1], [-2, -1], 
                       [1, 2], [1, -2], [-1, 2], [-1, -2]]; //all possible movements of knight
-        for(let m of move){
-            let possibleFile = String.fromCharCode(initialFile.charCodeAt(0) + m[0]);
-            let possibleRank = initialRank + m[1];
-            if(possibleFile >= 'a' && possibleFile <= 'h' && possibleRank >= 1 
-                && possibleRank <= 8 && (possibleFile + possibleRank) === finalPos ){
-                    return true;
-                }
-        }
-        return false;
+    for(let m of move){
+        let possibleFile = String.fromCharCode(initialFile.charCodeAt(0) + m[0]);
+        let possibleRank = initialRank + m[1];
+        if(possibleFile >= 'a' && possibleFile <= 'h' && possibleRank >= 1 
+            && possibleRank <= 8 && (possibleFile + possibleRank) === finalPos ){
+                return true;
+            }
+    }
+    return false;
 }
 
 function checkRookMove(initialFile,initialRank,finalPos) {
-    //console.log(finalFile+finalRank);
     // vertical movement
     if (finalPos[0] === initialFile) {
         let min = Math.min(initialRank, parseInt(finalPos[1]));
@@ -461,22 +403,16 @@ function checkKingMove(initialFile,initialRank,finalPos){
 }
 
 function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece){
-    console.log(existingPiece)
-    console.log(target.childNodes);
-    console.log(piece , finalPos);
     let targetRemove = document.getElementById(target.id);
     let initialSquare = document.getElementById(initialPos);
     let finalSquare = document.getElementById(finalPos);
     let pieceColour = null;
-    console.log(targetRemove);
     if(existingPiece){
         pieceColour = existingPiece.classList[1][0];
     }
     if(existingPiece && finalPos == target.id && draggedPiece.classList[1][0] != pieceColour){
-        console.log('entered');
         existingPiece.remove();
         if(isCheck(piece[0])){
-            console.log('2');
             return true;
         }
         initialSquare.appendChild(draggedPiece);
@@ -485,11 +421,9 @@ function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece
     }
     finalSquare.appendChild(draggedPiece);
     if(isCheck(piece[0]) && draggedPiece.classList[1][0] != pieceColour){
-        console.log('2');
         finalSquare.removeChild(draggedPiece); //removing the element as is gets added back
         return true;
     }
-    console.log('in check');
     finalSquare.removeChild(draggedPiece);
     initialSquare.appendChild(draggedPiece);
     return false;
