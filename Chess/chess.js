@@ -1,5 +1,4 @@
 //lower case - black upper case - white
-// IMP - Scroll through as there are fns to be made
 const initialBoard = [
     ["br", "bn", "bb", "bq", "bk", "bb", "bn", "br"],
     ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
@@ -78,12 +77,7 @@ document.addEventListener('drop', (e) => {
     let piece_selected = draggedPiece.classList[1];//storing piece selected
     let initialPosition = draggedPiece.parentNode.id;//storing starting position of piece
     let finalPosition = target.id;// storing final position of piece
-    //console.log("piece",piece_selected);
-    // console.log(initialPosition);
-    // console.log(finalPosition);
-    let x = isValid(piece_selected,initialPosition,finalPosition,target);
-    //console.log(x);
-    if (x && draggedPiece) {
+    if (isValid(piece_selected,initialPosition,finalPosition,target) && draggedPiece) {
         const existingPiece = target.querySelector('.piece');
         // checking for empty square or opp square
         if (!existingPiece || (draggedPiece.classList[1] !== existingPiece.classList[1])) {
@@ -105,7 +99,6 @@ document.addEventListener('drop', (e) => {
             //check = isCheck(piece_selected[0],existingPiece); // checking for check
             if(currentTurn == 'white' && move_count != 0){// need to add the validation for draw
                 moves.push(storeMoves(move));
-                //console.log(moves);
                 move = [];
                 move_count++;
             }
@@ -113,7 +106,6 @@ document.addEventListener('drop', (e) => {
                 move_count++;
             }
             if(currentTurn === 'black'){
-                //console.log('black to move');
                 pieces = document.body.querySelectorAll('.piece');
                 pieces.forEach(piece =>{
                     if(piece.classList.contains('disabled')){
@@ -126,7 +118,6 @@ document.addEventListener('drop', (e) => {
                 
             }
             else if(currentTurn === 'white'){
-                //console.log('white to move');
                 pieces.forEach(piece =>{
                     if(piece.classList.contains('disabled')){
                         piece.classList.remove('disabled');
