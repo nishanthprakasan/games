@@ -1,6 +1,6 @@
 //DOES NOT CHECK FOR PINS
 //CANNOT CAPTURE CHECK GIVING PIECE 
-function isCheck(colour,existingPiece){//does not check for pins still
+function isCheck(colour){//does not check for pins still
     //console.log('checking....');
     let colourAttacker = null;
     if(colour == 'w'){//using to finding the colour of king
@@ -135,8 +135,6 @@ function isCheck(colour,existingPiece){//does not check for pins still
 function isValid(piece, initialPos, finalPos, target){//need to do solve what to do after check
     const initialFile = initialPos[0];// stores the alphabet of notation
     const initialRank = parseInt(initialPos[1]);//stores the number of notation
-    const finalFile = finalPos[0];
-    const finalRank = parseInt(finalPos[1]);
     const existingPiece = target.querySelector('.piece');
     if (initialPos === finalPos){
         return false;
@@ -145,7 +143,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
     switch (piece) {
         case 'wP':
             if (checkWhitePawnMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){
@@ -166,7 +164,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
 
         case 'bp':
             if (checkBlackPawnMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){
@@ -188,7 +186,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'wR':
         case 'br':
             if (checkRookMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){
@@ -211,7 +209,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'wB':
         case 'bb':
             if (checkBishopMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){
@@ -234,7 +232,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'wQ':
         case 'bq':
             if((checkRookMove(initialFile,initialRank,finalPos) || checkBishopMove(initialFile,initialRank,finalPos)) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){ 
@@ -256,7 +254,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'wN':
         case 'bn':
             if (checkKnightMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){
@@ -279,7 +277,7 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
         case 'wK':
         case 'bk':
             if (checkKingMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos)){
+            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 console.log('entered');
                 console.log(existingPiece);
                 if(existingPiece){
@@ -303,6 +301,11 @@ function isValid(piece, initialPos, finalPos, target){//need to do solve what to
 }
 
 function checkBlackPawnMove(initialFile,initialRank,finalPos){
+    let finalId = '#'+finalPos;
+    let pieceOpp = document.body.querySelector(finalId).children;
+    if(pieceOpp.length != 0){
+        pieceOpp = pieceOpp[0].classList[1][0];
+    }
     // pawn forward move by one
     if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank - 1){
         return true;
@@ -312,7 +315,8 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
         return true;
     }
     // capturing
-    if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank - 1) {
+    if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank - 1 
+    && pieceOpp == 'w') {
         return true;
     }
     console.log('1');
@@ -320,6 +324,11 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
 }
 
 function checkWhitePawnMove(initialFile,initialRank,finalPos){
+    let finalId = '#'+finalPos;
+    let pieceOpp = document.body.querySelector(finalId).children;
+    if(pieceOpp.length != 0){
+        pieceOpp = pieceOpp[0].classList[1][0];
+    }
     // pawn forward move by one
     if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank + 1){
         return true;
@@ -329,7 +338,9 @@ function checkWhitePawnMove(initialFile,initialRank,finalPos){
         return true;
     }
     // capturing
-    if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1) {
+    if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1
+     && pieceOpp == 'b'){
+        console.log('1');
         return true;
     }
     return false;
@@ -449,58 +460,39 @@ function checkKingMove(initialFile,initialRank,finalPos){
     }
 }
 
-function handleCheck(piece,existingPiece,target,initialPos){
-        //console.log('1');
-        if(isCheck(piece[0],existingPiece)){
-            console.log('not in check');
+function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece){
+    console.log(existingPiece)
+    console.log(target.childNodes);
+    console.log(piece , finalPos);
+    let targetRemove = document.getElementById(target.id);
+    let initialSquare = document.getElementById(initialPos);
+    let finalSquare = document.getElementById(finalPos);
+    let pieceColour = null;
+    console.log(targetRemove);
+    if(existingPiece){
+        pieceColour = existingPiece.classList[1][0];
+    }
+    if(existingPiece && finalPos == target.id && draggedPiece.classList[1][0] != pieceColour){
+        console.log('entered');
+        existingPiece.remove();
+        if(isCheck(piece[0])){
+            console.log('2');
             return true;
         }
-        else{// IF THERE ARE TWO ELEMENTS IN A SQUARE BUG TO BE FIXED
-            console.log('in check');
-            // console.log('target',target);
-            // console.log('dragged piece' , draggedPiece);
-            target.appendChild(draggedPiece);
-            console.log(target.childNodes);
-            let targetRemove = document.getElementById(target.id);
-            let initialSquare = document.getElementById(initialPos);
-            console.log(target.childNodes.length);
-            if(isCheck(piece[0],existingPiece)){
-                console.log('2');
-                targetRemove.innerHTML = ''; //removing the element as is gets added back
-                return true;
-            }
-            else if(target.childNodes.length == 2){
-                let targetPiece = target.querySelector('.disabled');
-                console.log(targetPiece.outerHTML);
-                let childNodes = [];
-                for(let node of target.childNodes){
-                    childNodes.push(node.outerHTML);
-                }
-                console.log(childNodes)
-                console.log(targetPiece.outerHTML);
-                for(let node of childNodes){
-                    console.log(node);
-                    console.log(initialSquare);
-                    if(node != targetPiece.outerHTML){
-                        initialSquare.innerHTML = draggedPiece.outerHTML;
-                    }
-                    else{
-                        console.log(targetRemove);
-                        console.log(targetPiece)
-                        targetRemove.innerHTML = targetPiece.outerHTML;
-                    }
-                }
-                
-            }
-            else{
-                initialSquare.innerHTML = targetRemove.innerHTML;
-                targetRemove.innerHTML = '';
-            }
-            // initialSquare.innerHTML = targetRemove.innerHTML;
-            // targetRemove.innerHTML = '';
-            console.log('3');
-            return false;
-        }
+        initialSquare.appendChild(draggedPiece);
+        targetRemove.appendChild(existingPiece);
+        return false;
+    }
+    finalSquare.appendChild(draggedPiece);
+    if(isCheck(piece[0]) && draggedPiece.classList[1][0] != pieceColour){
+        console.log('2');
+        finalSquare.removeChild(draggedPiece); //removing the element as is gets added back
+        return true;
+    }
+    console.log('in check');
+    finalSquare.removeChild(draggedPiece);
+    initialSquare.appendChild(draggedPiece);
+    return false;
 }
 
 function storeMoves(move){
