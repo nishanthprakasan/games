@@ -1,0 +1,57 @@
+/* styles.css */
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #333;
+    margin: 0;
+}
+ span{
+    transform: translateX(-200px);
+    color: white;
+ }
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 60px); 
+    grid-template-rows: repeat(8, 60px);    
+    border: 2px solid #222;
+}
+
+.chessboard.flip,.piece.flip {
+    transform: rotate(180deg);
+}
+
+.square {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.white {
+    background-color: #f0d9b5;
+}
+
+.black {
+    background-color: #b58863;
+}
+
+.piece {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none; 
+}
+
+.piece img {
+    width: 70px;
+    height: 70px;
+    pointer-events: none; 
+}
