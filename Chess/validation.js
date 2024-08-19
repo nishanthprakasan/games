@@ -1,5 +1,5 @@
 
-function isCheck(colour){
+function isCheck(colour){//returns true if the move is not bypassing any check
     let colourAttacker = null;
     if(colour == 'w'){//using to finding the colour of king
         colour = 'wK';
@@ -10,7 +10,6 @@ function isCheck(colour){
         colourAttacker = 'w';
     }
     let kingPosition = document.getElementsByClassName(colour)[0].parentNode.id;
-
     if(colourAttacker == 'b'){
         colourAttacker += 'p';
     }
@@ -123,9 +122,7 @@ function isValid(piece, initialPos, finalPos, target){
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
+                        existingPiece.remove();
                         return true;
                     } else{
                         return false;
@@ -140,9 +137,7 @@ function isValid(piece, initialPos, finalPos, target){
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
+                        existingPiece.remove();
                         return true;
                     } else{
                         return false;
@@ -251,17 +246,21 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
     if(pieceOpp.length != 0){
         pieceOpp = pieceOpp[0].classList[1][0];
     }
+    console.log(initialFile,initialRank,finalPos);
     // pawn forward move by one
     if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank - 1 && pieceOpp != 'w'){
+        console.log('double step');
         return true;
     }
     // double move on first turn
     if (initialRank === 7 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 5 && pieceOpp != 'w'){
+        console.log('move possible');
         return true;
     }
     // capturing
     if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank - 1 
     && pieceOpp == 'w') {
+        console.log('capture possible');
         return true;
     }
     return false;
@@ -412,9 +411,12 @@ function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece
     }
     if(existingPiece && finalPos == target.id && draggedPiece.classList[1][0] != pieceColour){
         existingPiece.remove();
+        targetRemove.appendChild(draggedPiece);
         if(isCheck(piece[0])){
+            targetRemove.removeChild(draggedPiece);
             return true;
         }
+        targetRemove.removeChild(draggedPiece);
         initialSquare.appendChild(draggedPiece);
         targetRemove.appendChild(existingPiece);
         return false;
