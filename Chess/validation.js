@@ -1,129 +1,152 @@
-
-function isCheck(colour){//returns true if the move is not bypassing any check
-    let colourAttacker = null;
-    if(colour == 'w'){//using to finding the colour of king
-        colour = 'wK';
-        colourAttacker = 'b';
-    }
-    else {
-        colour = 'bk';
-        colourAttacker = 'w';
-    }
-    let kingPosition = document.getElementsByClassName(colour)[0].parentNode.id;
-    if(colourAttacker == 'b'){
-        colourAttacker += 'p';
+//PAWN PROMOTION AND CASTLING LEFT
+function checkMate(piece){
+    let pieceColour;
+    let piecesClass; // to store all the pieces
+    //storing all possible one step ahead moves for pieces to check for stalemate
+    let pawnMove;
+    const knightMove =[[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
+    const bishopMove = [[1,1],[1,-1],[-1,1],[-1,-1]];
+    const rookMove = [[0,1],[0,-1],[1,0],[-1,0]];
+    const queenMove = [[1,1],[1,-1],[-1,1],[-1,-1],[0,1],[0,-1],[1,0],[-1,0] ];
+    if(piece[0] == 'w'){
+        pieceColour = 'b';
+        piecesClass = ['.bk','.bp','.bn','.bb','.br','.bq'];
+        pawnMove = [[0,-2],[0,-1],[1,-1],[-1,-1]];
     }
     else{
-        colourAttacker += 'P';
+        pieceColour = 'w';
+        piecesClass = ['.wK','.wP','.wN','.wB','.wR','.wQ'];
+        pawnMove = [[0,2],[0,1],[1,1],[-1,1]];
     }
-    let pawns = document.getElementsByClassName(colourAttacker);
-    for(let pawn of pawns){
-        let initialFile = pawn.parentNode.id[0];
-        let initialRank = parseInt(pawn.parentNode.id[1]);
-        let valid = null;
-        if(colourAttacker == 'wP'){
-            valid = checkWhitePawnMove(initialFile,initialRank,kingPosition);
+    const pawns = document.body.querySelectorAll(piecesClass[1]);
+    const knights = document.body.querySelectorAll(piecesClass[2]);
+    const bishops = document.body.querySelectorAll(piecesClass[3]);
+    const rooks = document.body.querySelectorAll(piecesClass[4]);
+    const queens = document.body.querySelectorAll(piecesClass[5]);
+    let king = document.body.querySelector(piecesClass[0]); //store position of king
+    let currentPos = king.parentNode.id;
+    let kingCanMove = false;
+    let kingPossibleMoves = checkKingMove(currentPos[0],parseInt(currentPos[1]),null).possibleMoves; // storing whether it has possible moves
+    for(let move of kingPossibleMoves){
+        if (kingSimulator(currentPos[0],parseInt(currentPos[1]),move,pieceColour,king)) {
+            kingCanMove = true;
+            break;
+        }
+    }
+    let inCheck = isCheck(pieceColour);
+    let possibleMoves = inCheck.possibleMoves;
+    console.log(possibleMoves);
+    if(possibleMoves){//checking if u can block or kill the piece
+        for(let move of possibleMoves){
+            let moveId = '#' + move;
+            let target = document.body.querySelector(moveId);
+            console.log(target);
+            for(let pawn of pawns){
+                if(isValid(piecesClass[1].slice(1), pawn.parentNode.id, move,target,pawn,true)) return 'validGame';
+            }
+            for(let knight of knights){
+                console.log(knight);
+                if(isValid(piecesClass[2].slice(1), knight.parentNode.id, move,target,knight,true)) return 'validGame';
+            }
+            for(let bishop of bishops){
+                if(isValid(piecesClass[3].slice(1), bishop.parentNode.id, move,target,bishop,true)) return 'validGame';
+            }
+            for(let rook of rooks){
+                if(isValid(piecesClass[4].slice(1), rook.parentNode.id, move,target,rook,true)) return 'validGame';
+            }
+            for(let queen of queens){
+                if(isValid(piecesClass[5].slice(1), queen.parentNode.id, move,target,queen,true)) return 'validGame';
+            }
+        }
+    }
+    if(kingCanMove == false){//checkmate
+        if(!inCheck.valid){
+            console.log('checkmate');
+            return 'checkmate';
         }
         else{
-            valid = checkBlackPawnMove(initialFile,initialRank,kingPosition);
-        }
-        if(valid == true){
-            console.log('pawn check');
-            return false;
-        }
-    }
-
-    if(colourAttacker[0] == 'b'){
-        colourAttacker = 'bn';
-    }
-    else{
-        colourAttacker = 'wN';
-    }
-    let knights = document.getElementsByClassName(colourAttacker);
-    for(let knight of knights){
-        let initialFile = knight.parentNode.id[0];
-        let initialRank = parseInt(knight.parentNode.id[1]);
-        let valid = checkKnightMove(initialFile,initialRank,kingPosition);
-        if(valid == true){
-            console.log('knight check');
-            return false;
-        }
-    }
-
-    if(colourAttacker[0] == 'b'){
-        colourAttacker = 'bb';
-    }
-    else{
-        colourAttacker = 'wB';
-    }
-    let bishops = document.getElementsByClassName(colourAttacker);
-    for(let bishop of bishops){
-        let initialFile = bishop.parentNode.id[0];
-        let initialRank = parseInt(bishop.parentNode.id[1]);
-        let valid = checkBishopMove(initialFile,initialRank,kingPosition);
-        if(valid == true){
-            console.log('bishop check');
-            return false;
-        }
-    }
-
-    if(colourAttacker[0] == 'b'){
-        colourAttacker = 'br';
-    }
-    else{
-        colourAttacker = 'wR';
-    }
-    let rooks = document.getElementsByClassName(colourAttacker);
-    for(let rook of rooks){
-        let initialFile = rook.parentNode.id[0];
-        let initialRank = parseInt(rook.parentNode.id[1]);
-        let valid = checkRookMove(initialFile,initialRank,kingPosition);
-        if(valid == true){
-            console.log('rook check');
-            return false;
-        }
-    }
-
-    if(colourAttacker[0] == 'b'){
-        colourAttacker = 'bq';
-    }
-    else{
-        colourAttacker = 'wQ';
-    }
-    let queens = document.getElementsByClassName(colourAttacker);
-    for(let queen of queens){
-        let initialFile = queen.parentNode.id[0];
-        let initialRank = parseInt(queen.parentNode.id[1]);
-        let valid = checkRookMove(initialFile,initialRank,kingPosition) || checkBishopMove(initialFile,initialRank,kingPosition);
-        if(valid == true){
-            console.log('queen check');
-            return false;
+            for(let pawn of pawns){
+                for(let move of pawnMove){
+                    let moveId = '#' + String.fromCharCode(pawn.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(pawn.parentNode.id[1]) + move[1]);
+                    if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
+                        console.log(moveId);
+                        let target = document.body.querySelector(moveId);
+                        if(isValid(piecesClass[1].slice(1), pawn.parentNode.id, moveId.slice(1),target,pawn,true)) return 'validGame';
+                    }   
+                }
+            }
+            console.log('pawn not possible');
+            for(let knight of knights){
+                for(let move of knightMove){
+                    let moveId = '#' + String.fromCharCode(knight.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(knight.parentNode.id[1]) + move[1]);
+                    if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
+                        console.log(moveId);
+                        let target = document.body.querySelector(moveId);
+                        if(isValid(piecesClass[2].slice(1), knight.parentNode.id, moveId.slice(1),target,knight,true)) return 'validGame';
+                    } 
+                }
+            }
+            console.log('knight possible');
+            for(let bishop of bishops){
+                for(let move of bishopMove){
+                    let moveId = '#' + String.fromCharCode(bishop.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(bishop.parentNode.id[1]) + move[1]);
+                    if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
+                        console.log(moveId);
+                        let target = document.body.querySelector(moveId);
+                        if(isValid(piecesClass[3].slice(1), bishop.parentNode.id, moveId.slice(1),target,bishop,true)) return 'validGame';
+                    }
+                    
+                }
+            }
+            console.log('bishop possible');
+            for(let rook of rooks){
+                for(let move of rookMove){
+                    let moveId = '#' + String.fromCharCode(rook.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(rook.parentNode.id[1]) + move[1]);
+                    if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
+                        console.log(moveId);
+                        let target = document.body.querySelector(moveId);
+                        if(isValid(piecesClass[4].slice(1), rook.parentNode.id, moveId.slice(1),target,rook,true)) return 'validGame';
+                    }
+                    
+                }
+            }
+            console.log('rook possible');
+            for(let queen of queens){
+                for(let move of queenMove){
+                    let moveId = '#' + String.fromCharCode(queen.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(queen.parentNode.id[1]) + move[1]);
+                    if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
+                        console.log(moveId);
+                        let target = document.body.querySelector(moveId);
+                        if(isValid(piecesClass[5].slice(1), queen.parentNode.id, moveId.slice(1),target,queen,true)) return 'validGame';
+                    }
+                }
+            }
+            console.log('queen possible');
+        return 'stalemate';
         }
     }
-    return true;
+    return 'validGame';
 }
 
-function isValid(piece, initialPos, finalPos, target){
+function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
     const initialFile = initialPos[0];// stores the alphabet of notation
     const initialRank = parseInt(initialPos[1]);//stores the number of notation
     const existingPiece = target.querySelector('.piece');
     let finalId = '#'+finalPos;
     let pieceOpp = document.body.querySelector(finalId).children;
     if(pieceOpp.length != 0){
-        pieceOpp = pieceOpp[0].classList[1][0];
+        pieceOpp = pieceOpp[0].classList[1][0];//stores colour of piece in that square
     }
     if (initialPos === finalPos){
         return false;
     }
-
     switch (piece) {
         case 'wP':
             if (checkWhitePawnMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
-                        existingPiece.remove();
-                        return true;
+                        if(check == false) existingPiece.remove();
                     } else{
                         return false;
                     }
@@ -137,8 +160,8 @@ function isValid(piece, initialPos, finalPos, target){
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
-                        existingPiece.remove();
-                        return true;
+                        if(check == false) existingPiece.remove();
+                        //return true;
                     } else{
                         return false;
                     }
@@ -152,11 +175,8 @@ function isValid(piece, initialPos, finalPos, target){
             if (checkRookMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
-                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
-                        return true;
+                    if (existingPiece.classList[1][0] !== piece[0]){
+                        if(check == false) existingPiece.remove();
                     } else{
                         return false;
                     }
@@ -170,11 +190,8 @@ function isValid(piece, initialPos, finalPos, target){
             if (checkBishopMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
-                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
-                        return true;
+                    if (existingPiece.classList[1][0] !== piece[0]){
+                        if(check == false) existingPiece.remove();
                     } else{
                         return false;
                     }
@@ -187,12 +204,9 @@ function isValid(piece, initialPos, finalPos, target){
         case 'bq':
             if((checkRookMove(initialFile,initialRank,finalPos) || checkBishopMove(initialFile,initialRank,finalPos)) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
-                if(existingPiece){ 
-                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
-                        return true;
+                if(existingPiece){
+                    if (existingPiece.classList[1][0] !== piece[0]){
+                        if(check == false) existingPiece.remove();
                     } else{
                         return false;
                     }
@@ -206,11 +220,8 @@ function isValid(piece, initialPos, finalPos, target){
             if (checkKnightMove(initialFile,initialRank,finalPos) &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
-                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
-                        return true;
+                    if (existingPiece.classList[1][0] !== piece[0]){
+                        if(check == false) existingPiece.remove();
                     } else{
                         return false;
                     }
@@ -221,14 +232,11 @@ function isValid(piece, initialPos, finalPos, target){
             
         case 'wK':
         case 'bk':
-            if (checkKingMove(initialFile,initialRank,finalPos) &&
+            if (checkKingMove(initialFile,initialRank,finalPos).valid &&
             handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
-                    if (existingPiece.classList[1][0] !== piece[0] && pieceOpp != piece[0]){
-                        if(existingPiece.classList[1][1].toLowerCase() != 'k'){
-                            existingPiece.remove();
-                        }
-                        return true;
+                    if (existingPiece.classList[1][0] !== piece[0]){
+                        if(check == false) existingPiece.remove();
                     } else{
                         return false;
                     }
@@ -246,21 +254,20 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
     if(pieceOpp.length != 0){
         pieceOpp = pieceOpp[0].classList[1][0];
     }
-    console.log(initialFile,initialRank,finalPos);
     // pawn forward move by one
     if (finalPos[0] === initialFile && parseInt(finalPos[1]) === initialRank - 1 && pieceOpp != 'w'){
-        console.log('double step');
         return true;
     }
     // double move on first turn
     if (initialRank === 7 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 5 && pieceOpp != 'w'){
-        console.log('move possible');
-        return true;
+        let moveAhead = '#' + initialFile + (initialRank - 1);
+        let oneMoveAhead = document.body.querySelector(moveAhead);
+        if(oneMoveAhead.children.length != 0) return false;
+        else return true;
     }
     // capturing
     if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank - 1 
     && pieceOpp == 'w') {
-        console.log('capture possible');
         return true;
     }
     return false;
@@ -278,7 +285,13 @@ function checkWhitePawnMove(initialFile,initialRank,finalPos){
     }
     // double move on first turn
     if (initialRank === 2 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 4 && pieceOpp != 'b'){
-        return true;
+        let moveAhead = '#' + initialFile + (initialRank + 1);
+        console.log(moveAhead);
+        let oneMoveAhead = document.body.querySelector(moveAhead);
+        console.log(oneMoveAhead);
+        console.log(oneMoveAhead.children);
+        if(oneMoveAhead.children.length != 0) return false;
+        else return true;
     }
     // capturing
     if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1
@@ -329,7 +342,6 @@ function checkRookMove(initialFile,initialRank,finalPos) {
 }
 
 function checkBishopMove(initialFile,initialRank,finalPos) {
-
     let countRight = initialFile.charCodeAt(0) + 1;
     let countLeft = initialFile.charCodeAt(0) - 1;
     let rightUp = true;
@@ -391,43 +403,379 @@ function checkBishopMove(initialFile,initialRank,finalPos) {
 function checkKingMove(initialFile,initialRank,finalPos){
     const moveKing = [[1, 1], [1, 0], [1, -1], [0, -1], 
     [0, 1], [-1, 1], [-1, 0], [-1, -1]]; // all possible movements of king
+    let possibleMoves = [];
     for(let m of moveKing){
         let possibleFile = String.fromCharCode(initialFile.charCodeAt(0) + m[0]);
         let possibleRank = initialRank + m[1];
         if(possibleFile >= 'a' && possibleFile <= 'h' && possibleRank >= 1 
-        && possibleRank <= 8 && (possibleFile + possibleRank) === finalPos){
-            return true;
+        && possibleRank <= 8){
+            possibleMoves.push(possibleFile+possibleRank);
+            if((possibleFile + possibleRank) === finalPos){
+                return {
+                    possibleMoves : possibleMoves,
+                    valid : true
+                };
+            }
         }
     }
+    if(possibleMoves.length === 0){
+        return {
+            possibleMoves : possibleMoves,
+            valid : false
+        };
+    }
+    return{
+        possibleMoves : possibleMoves,
+        valid : false
+    };
+    
 }
 
 function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece){
-    let targetRemove = document.getElementById(target.id);
     let initialSquare = document.getElementById(initialPos);
     let finalSquare = document.getElementById(finalPos);
     let pieceColour = null;
     if(existingPiece){
         pieceColour = existingPiece.classList[1][0];
     }
-    if(existingPiece && finalPos == target.id && draggedPiece.classList[1][0] != pieceColour){
+    if(existingPiece && draggedPiece.classList[1][0] != pieceColour){
         existingPiece.remove();
-        targetRemove.appendChild(draggedPiece);
-        if(isCheck(piece[0])){
-            targetRemove.removeChild(draggedPiece);
+        // console.log(draggedPiece);
+        // console.log(existingPiece);
+        finalSquare.appendChild(draggedPiece);
+        if(isCheck(piece[0]).valid){
+            // console.log(initialSquare);
+            // console.log(finalSquare);
+            initialSquare.appendChild(draggedPiece);
+            finalSquare.appendChild(existingPiece);
             return true;
         }
-        targetRemove.removeChild(draggedPiece);
+        finalSquare.removeChild(draggedPiece);
         initialSquare.appendChild(draggedPiece);
-        targetRemove.appendChild(existingPiece);
+        finalSquare.appendChild(existingPiece);
         return false;
     }
     finalSquare.appendChild(draggedPiece);
-    if(isCheck(piece[0]) && draggedPiece.classList[1][0] != pieceColour){
-        finalSquare.removeChild(draggedPiece); //removing the element as is gets added back
+    if(isCheck(piece[0]).valid && draggedPiece.classList[1][0] != pieceColour){
+        finalSquare.removeChild(draggedPiece);//removing the element as is gets added back
+        initialSquare.appendChild(draggedPiece); 
         return true;
     }
     finalSquare.removeChild(draggedPiece);
     initialSquare.appendChild(draggedPiece);
+    return false;
+}
+
+function isCheck(colour){//returns true if the move is not bypassing any check
+    let colourAttacker = null;
+    if(colour == 'w'){//using to finding the colour of king
+        colour = 'wK';
+        colourAttacker = 'b';
+    }
+    else {
+        colour = 'bk';
+        colourAttacker = 'w';
+    }
+    let kingPosition = document.getElementsByClassName(colour)[0].parentNode.id;
+
+    if(colourAttacker == 'b'){
+        colourAttacker += 'p';
+    }
+    else{
+        colourAttacker += 'P';
+    }
+    let pawnMove = pawnSimmulator(colourAttacker,kingPosition);
+    if(!pawnMove.valid) {
+        return {
+            valid : false , 
+            possibleMoves : pawnMove.possibleMoves
+        };
+    }
+
+    if(colourAttacker[0] == 'b'){
+        colourAttacker = 'bn';
+    }
+    else{
+        colourAttacker = 'wN';
+    }
+    let knightMove = knightSimulator(colourAttacker,kingPosition);
+    if(!knightMove.valid) {
+        return {
+            valid : false , 
+            possibleMoves : knightMove.possibleMoves
+        };
+    }
+
+    if(colourAttacker[0] == 'b'){
+        colourAttacker = 'bb';
+    }
+    else{
+        colourAttacker = 'wB';
+    }
+    let bishopMove = bishopSimulator(colourAttacker,kingPosition)
+    if (!bishopMove.valid) {
+        return {
+            valid : false , 
+            possibleMoves : bishopMove.possibleMoves
+        };
+    }
+
+    if(colourAttacker[0] == 'b'){
+        colourAttacker = 'br';
+    }
+    else{
+        colourAttacker = 'wR';
+    }
+    let rookMove = rookSimulator(colourAttacker,kingPosition)
+    if (!rookMove.valid) {
+        return {
+            valid : false , 
+            possibleMoves : rookMove.possibleMoves
+        };
+    }
+
+    if(colourAttacker[0] == 'b'){
+        colourAttacker = 'bq';
+    }
+    else{
+        colourAttacker = 'wQ';
+    }
+
+    let queenMove = queenSimulator(colourAttacker,kingPosition)
+    if (!queenMove.valid) {
+        return {
+            valid : false , 
+            possibleMoves : queenMove.possibleMoves
+        };
+    }
+    
+    return {
+        valid : true , 
+        possibleMoves : null
+    };
+}
+
+function pawnSimmulator(colourAttacker,kingPosition){
+    let pawns = document.getElementsByClassName(colourAttacker);
+    for(let pawn of pawns){
+        let initialFile = pawn.parentNode.id[0];
+        let initialRank = parseInt(pawn.parentNode.id[1]);
+        let valid = null;
+        if(colourAttacker == 'wP'){
+            valid = checkWhitePawnMove(initialFile,initialRank,kingPosition);
+        }
+        else{
+            valid = checkBlackPawnMove(initialFile,initialRank,kingPosition);
+        }
+        if(valid == true){
+            console.log('pawn check');
+            return{
+                valid : false,
+                possibleMoves : initialFile+initialRank // as u can only kill the pawn in check(moving king is taken care already)
+            };
+        }
+    }
+    return{
+        valid : true,
+        possibleMoves : null
+    };
+}
+
+function knightSimulator(colourAttacker,kingPosition){
+    let knights = document.getElementsByClassName(colourAttacker);
+    for(let knight of knights){
+        let initialFile = knight.parentNode.id[0];
+        let initialRank = parseInt(knight.parentNode.id[1]);
+        let valid = checkKnightMove(initialFile,initialRank,kingPosition);
+        if(valid == true){
+            console.log('knight check');
+            return{
+                valid : false,
+                possibleMoves : initialFile+initialRank // as u can only kill the knight in check(moving king is taken care already)
+            };
+        }
+    }
+    return{
+        valid : true,
+        possibleMoves : null
+    };
+}
+
+function bishopSimulator(colourAttacker,kingPosition){
+    let bishops = document.getElementsByClassName(colourAttacker);
+    for(let bishop of bishops){
+        let initialFile = bishop.parentNode.id[0];
+        let initialRank = parseInt(bishop.parentNode.id[1]);
+        let valid = checkBishopMove(initialFile,initialRank,kingPosition);
+        if(valid == true){
+            console.log('bishop check');
+            possibleMoves = [];
+            let kingFile = kingPosition[0];
+            let kingRank = parseInt(kingPosition[1]);
+            if(kingFile > initialFile){//king is towards the right
+                let count = 0;
+                if(kingRank > initialRank){//right top
+                    for(let i = initialRank; i < kingRank;i++){
+                        possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                        count++;
+                    }
+                }
+                else{//right bottom
+                    for(let i = initialRank; i > kingRank; i--){
+                        possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                        count++;
+                    }
+                }
+            }
+            else{
+                let count = 0;
+                if(kingRank > initialRank){//left top
+                    for(let i = initialRank; i < kingRank;i++){
+                        possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                        count--;
+                    }
+                }
+                else{//left bottom
+                    for(let i = initialRank; i > kingRank; i--){
+                        possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                        count--;
+                    }
+                }
+            }
+            return {
+                valid : false,
+                possibleMoves : possibleMoves
+            };
+        }
+    }
+    return{
+        valid : true,
+        possibleMoves : null
+    };
+}
+
+function rookSimulator(colourAttacker,kingPosition){
+    let rooks = document.getElementsByClassName(colourAttacker);
+    for(let rook of rooks){
+        let initialFile = rook.parentNode.id[0];
+        let initialRank = parseInt(rook.parentNode.id[1]);
+        let valid = checkRookMove(initialFile,initialRank,kingPosition);
+        if(valid == true){
+            console.log('rook check');
+            let possibleMoves = [];
+            let kingFile = kingPosition[0];
+            let kingRank = parseInt(kingPosition[1]);
+            if(kingFile == initialFile){//vertical
+                let min = Math.min(initialRank,kingRank);
+                let max = Math.max(initialRank,kingRank);
+                for(let i = min; i <= max ; i++){
+                    possibleMoves.push(initialFile + i);
+                }
+            }
+            else if(initialFile == kingFile){ // horizontal
+                let min = Math.min(initialFile.charCodeAt(0), kingFile.charCodeAt(0));
+                let max = Math.max(initialFile.charCodeAt(0), kingFile.charCodeAt(0));
+                for(let i = min; i<= max ; i++){
+                    possibleMoves.push(String.fromCharCode(i) + initialFile);
+                }
+            }
+            return {
+                valid : false,
+                possibleMoves : possibleMoves
+            };
+        }
+    }
+    return {
+        valid : true,
+        possibleMoves : null
+    };
+}
+
+function queenSimulator(colourAttacker,kingPosition){
+    let queens = document.getElementsByClassName(colourAttacker);
+    for(let queen of queens){
+        let initialFile = queen.parentNode.id[0];
+        let initialRank = parseInt(queen.parentNode.id[1]);
+        let valid = checkRookMove(initialFile,initialRank,kingPosition) || checkBishopMove(initialFile,initialRank,kingPosition);
+        if(valid == true){
+            console.log('queen check');
+            possibleMoves = [];
+            let kingFile = kingPosition[0];
+            let kingRank = parseInt(kingPosition[1]);
+            if(kingFile == initialFile){//vertical
+                let min = Math.min(initialRank,kingRank);
+                let max = Math.max(initialRank,kingRank);
+                for(let i = min; i <= max ; i++){
+                    possibleMoves.push(initialFile + i);
+                }
+            }
+            else if(initialFile == kingFile){ // horizontal
+                let min = Math.min(initialFile.charCodeAt(0), kingFile.charCodeAt(0));
+                let max = Math.max(initialFile.charCodeAt(0), kingFile.charCodeAt(0));
+                for(let i = min; i<= max ; i++){
+                    possibleMoves.push(String.fromCharCode(i) + initialFile);
+                }
+            }
+            else{//diagonal 
+                if(kingFile > initialFile){//king is towards the right
+                    let count = 0;
+                    if(kingRank > initialRank){//right top
+                        for(let i = initialRank; i < kingRank;i++){
+                            possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                            count++;
+                        }
+                    }
+                    else{//right bottom
+                        for(let i = initialRank; i > kingRank; i--){
+                            possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                            count++;
+                        }
+                    }
+                }
+                else{
+                    let count = 0;
+                    if(kingRank > initialRank){//left top
+                        for(let i = initialRank; i < kingRank;i++){
+                            possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                            count--;
+                        }
+                    }
+                    else{//left bottom
+                        for(let i = initialRank; i > kingRank; i--){
+                            possibleMoves.push(String.fromCharCode(initialFile.charCodeAt(0) + count)  + i);
+                            count--;
+                        }
+                    }
+                }
+            }
+            console.log('queen check');
+            return {
+                valid : false,
+                possibleMoves : possibleMoves
+            };
+        }
+    }
+    return{
+        valid : true,
+        possibleMoves : null
+    };
+}
+
+function kingSimulator(initialFile,initialRank,finalPos,piece,draggedPiece){//simulating king moves
+    let initialPos = initialFile + initialRank;
+    let target = document.getElementById(finalPos);
+    const existingPiece = target.querySelector('.piece');
+    if (checkKingMove(initialFile,initialRank,finalPos).valid &&
+    handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+        if(existingPiece){
+            if (existingPiece.classList[1][0] !== piece[0]){
+                return true;//if it can capture
+            } else{
+                return false;
+            }
+        }
+        return true; 
+    }
     return false;
 }
 

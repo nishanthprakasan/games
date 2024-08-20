@@ -77,7 +77,7 @@ document.addEventListener('drop', (e) => {
     let piece_selected = draggedPiece.classList[1];//storing piece selected
     let initialPosition = draggedPiece.parentNode.id;//storing starting position of piece
     let finalPosition = target.id;// storing final position of piece
-    if (isValid(piece_selected,initialPosition,finalPosition,target) && draggedPiece) {
+    if (isValid(piece_selected,initialPosition,finalPosition,target,draggedPiece,false) && draggedPiece) {
         const existingPiece = target.querySelector('.piece');
         // checking for empty square or opp square
         if (!existingPiece || (draggedPiece.classList[1] !== existingPiece.classList[1])) {
@@ -95,6 +95,8 @@ document.addEventListener('drop', (e) => {
                 draggedPiece = null; // resetting piece
                 currentTurn = currentTurn === 'white' ? 'black' : 'white'
             }
+            //console.log(piece_selected);
+            console.log(checkMate(piece_selected));
             move.push(piece_selected+finalPosition);
             //check = isCheck(piece_selected[0],existingPiece); // checking for check
             if(currentTurn == 'white' && move_count != 0){// need to add the validation for draw
