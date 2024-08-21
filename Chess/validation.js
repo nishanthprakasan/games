@@ -1,4 +1,4 @@
-//PAWN PROMOTION AND CASTLING LEFT
+//CASTLING LEFT
 function checkMate(piece){
     let pieceColour;
     let piecesClass; // to store all the pieces
@@ -36,9 +36,10 @@ function checkMate(piece){
     let inCheck = isCheck(pieceColour);
     let possibleMoves = inCheck.possibleMoves;
     console.log(possibleMoves);
-    if(possibleMoves){//checking if u can block or kill the piece
+    if(possibleMoves && !inCheck.valid){//checking if u can block or kill the piece
         for(let move of possibleMoves){
             let moveId = '#' + move;
+            console.log(move);
             let target = document.body.querySelector(moveId);
             console.log(target);
             for(let pawn of pawns){
@@ -69,59 +70,59 @@ function checkMate(piece){
                 for(let move of pawnMove){
                     let moveId = '#' + String.fromCharCode(pawn.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(pawn.parentNode.id[1]) + move[1]);
                     if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
-                        console.log(moveId);
+                        // console.log(moveId);
                         let target = document.body.querySelector(moveId);
                         if(isValid(piecesClass[1].slice(1), pawn.parentNode.id, moveId.slice(1),target,pawn,true)) return 'validGame';
                     }   
                 }
             }
-            console.log('pawn not possible');
+            // console.log('pawn not possible');
             for(let knight of knights){
                 for(let move of knightMove){
                     let moveId = '#' + String.fromCharCode(knight.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(knight.parentNode.id[1]) + move[1]);
                     if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
-                        console.log(moveId);
+                        // console.log(moveId);
                         let target = document.body.querySelector(moveId);
                         if(isValid(piecesClass[2].slice(1), knight.parentNode.id, moveId.slice(1),target,knight,true)) return 'validGame';
                     } 
                 }
             }
-            console.log('knight possible');
+            // console.log('knight possible');
             for(let bishop of bishops){
                 for(let move of bishopMove){
                     let moveId = '#' + String.fromCharCode(bishop.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(bishop.parentNode.id[1]) + move[1]);
                     if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
-                        console.log(moveId);
+                        // console.log(moveId);
                         let target = document.body.querySelector(moveId);
                         if(isValid(piecesClass[3].slice(1), bishop.parentNode.id, moveId.slice(1),target,bishop,true)) return 'validGame';
                     }
                     
                 }
             }
-            console.log('bishop possible');
+            // console.log('bishop possible');
             for(let rook of rooks){
                 for(let move of rookMove){
                     let moveId = '#' + String.fromCharCode(rook.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(rook.parentNode.id[1]) + move[1]);
                     if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
-                        console.log(moveId);
+                        // console.log(moveId);
                         let target = document.body.querySelector(moveId);
                         if(isValid(piecesClass[4].slice(1), rook.parentNode.id, moveId.slice(1),target,rook,true)) return 'validGame';
                     }
                     
                 }
             }
-            console.log('rook possible');
+            // console.log('rook possible');
             for(let queen of queens){
                 for(let move of queenMove){
                     let moveId = '#' + String.fromCharCode(queen.parentNode.id.charCodeAt(0) + move[0]) + (parseInt(queen.parentNode.id[1]) + move[1]);
                     if(moveId[1] >= 'a' && moveId[1] <= 'h' && parseInt(moveId.slice(2)) >= 1 && parseInt(moveId.slice(2)) <= 8){
-                        console.log(moveId);
+                        // console.log(moveId);
                         let target = document.body.querySelector(moveId);
                         if(isValid(piecesClass[5].slice(1), queen.parentNode.id, moveId.slice(1),target,queen,true)) return 'validGame';
                     }
                 }
             }
-            console.log('queen possible');
+            // console.log('queen possible');
         return 'stalemate';
         }
     }
@@ -286,10 +287,10 @@ function checkWhitePawnMove(initialFile,initialRank,finalPos){
     // double move on first turn
     if (initialRank === 2 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 4 && pieceOpp != 'b'){
         let moveAhead = '#' + initialFile + (initialRank + 1);
-        console.log(moveAhead);
+        //console.log(moveAhead);
         let oneMoveAhead = document.body.querySelector(moveAhead);
-        console.log(oneMoveAhead);
-        console.log(oneMoveAhead.children);
+        // console.log(oneMoveAhead);
+        // console.log(oneMoveAhead.children);
         if(oneMoveAhead.children.length != 0) return false;
         else return true;
     }
@@ -440,12 +441,8 @@ function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece
     }
     if(existingPiece && draggedPiece.classList[1][0] != pieceColour){
         existingPiece.remove();
-        // console.log(draggedPiece);
-        // console.log(existingPiece);
         finalSquare.appendChild(draggedPiece);
         if(isCheck(piece[0]).valid){
-            // console.log(initialSquare);
-            // console.log(finalSquare);
             initialSquare.appendChild(draggedPiece);
             finalSquare.appendChild(existingPiece);
             return true;
@@ -557,6 +554,7 @@ function isCheck(colour){//returns true if the move is not bypassing any check
 
 function pawnSimmulator(colourAttacker,kingPosition){
     let pawns = document.getElementsByClassName(colourAttacker);
+    let possibleMoves =[];
     for(let pawn of pawns){
         let initialFile = pawn.parentNode.id[0];
         let initialRank = parseInt(pawn.parentNode.id[1]);
@@ -569,9 +567,10 @@ function pawnSimmulator(colourAttacker,kingPosition){
         }
         if(valid == true){
             console.log('pawn check');
+            possibleMoves.push(initialFile+initialRank);
             return{
                 valid : false,
-                possibleMoves : initialFile+initialRank // as u can only kill the pawn in check(moving king is taken care already)
+                possibleMoves : possibleMoves // as u can only kill the pawn in check(moving king is taken care already)
             };
         }
     }
@@ -583,15 +582,17 @@ function pawnSimmulator(colourAttacker,kingPosition){
 
 function knightSimulator(colourAttacker,kingPosition){
     let knights = document.getElementsByClassName(colourAttacker);
+    let possibleMoves = [];
     for(let knight of knights){
         let initialFile = knight.parentNode.id[0];
         let initialRank = parseInt(knight.parentNode.id[1]);
         let valid = checkKnightMove(initialFile,initialRank,kingPosition);
         if(valid == true){
             console.log('knight check');
+            possibleMoves.push(initialFile+initialRank);
             return{
                 valid : false,
-                possibleMoves : initialFile+initialRank // as u can only kill the knight in check(moving king is taken care already)
+                possibleMoves : possibleMoves // as u can only kill the knight in check(moving king is taken care already)
             };
         }
     }
@@ -777,6 +778,59 @@ function kingSimulator(initialFile,initialRank,finalPos,piece,draggedPiece){//si
         return true; 
     }
     return false;
+}
+
+function promote(colour) {
+    return new Promise((resolve) => {
+        let promotion = document.body.querySelector('.promotion-box');
+        promotion.style.visibility = 'visible';
+
+        let promotionQueen = document.body.querySelector('.queen-button');
+        let promotionRook = document.body.querySelector('.rook-button');
+        let promotionBishop = document.body.querySelector('.bishop-button');
+        let promotionKnight = document.body.querySelector('.knight-button');
+
+        if (colour == 'b') {
+            promotionQueen.innerText = '♛';
+            promotionRook.innerText = '♜';
+            promotionBishop.innerText = '♝';
+            promotionKnight.innerText = '♞';
+            promotionQueen.id = 'bq';
+            promotionRook.id = 'br';
+            promotionBishop.id = 'bb';
+            promotionKnight.id = 'bn';
+        } else {
+            promotionQueen.innerText = '♕';
+            promotionRook.innerText = '♖';
+            promotionBishop.innerText = '♗';
+            promotionKnight.innerText = '♘';
+            promotionQueen.id = 'wQ';
+            promotionRook.id = 'wR';
+            promotionBishop.id = 'wB';
+            promotionKnight.id = 'wN';
+        }
+
+        promotion.addEventListener('click', function onClick(e) {
+            let target = e.target;
+            promotion.style.visibility = 'hidden';
+            console.dir(target);
+            promotion.removeEventListener('click', onClick); // Remove the listener after the selection
+            resolve({
+                logo: target.innerHTML,
+                piece: target.id
+            });
+        });
+    });
+}
+
+async function handlePromotion(colour,target,draggedPiece) {
+    const pieceChosen = await promote(colour); // Wait for the piece to be chosen
+    const pieceElement = document.createElement('div');
+    pieceElement.classList.add('piece'); // Storing it as a piece
+    pieceElement.classList.add(pieceChosen.piece); // Storing the name of piece
+    pieceElement.innerText = pieceChosen.logo;
+    pieceElement.setAttribute('draggable', true);
+    target.appendChild(pieceElement);
 }
 
 function storeMoves(move){

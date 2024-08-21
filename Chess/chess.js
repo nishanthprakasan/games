@@ -60,7 +60,6 @@ document.addEventListener('dragstart', (e) => {
     if (e.target.classList.contains('piece') && !e.target.classList.contains('disabled')) {
         draggedPiece = e.target;
     }
-    //console.log(draggedPiece);
 });
 
 document.addEventListener('dragover', (e) => {
@@ -84,6 +83,9 @@ document.addEventListener('drop', (e) => {
             if(existingPiece){
                 if((draggedPiece.classList[1][0] !== existingPiece.classList[1][0])){
                     target.appendChild(draggedPiece); 
+                    if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){
+                        handlePromotion(piece_selected[0],target,draggedPiece);
+                    }
                     // changing the position of the piece according to move
                     draggedPiece = null; // resetting piece
                     currentTurn = currentTurn === 'white' ? 'black' : 'white';
@@ -91,14 +93,15 @@ document.addEventListener('drop', (e) => {
             }
             else{
                 target.appendChild(draggedPiece); 
+                if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){                  
+                    handlePromotion(piece_selected[0],target,draggedPiece);
+                }
                 // changing the position of the piece according to move
                 draggedPiece = null; // resetting piece
                 currentTurn = currentTurn === 'white' ? 'black' : 'white'
             }
-            //console.log(piece_selected);
             console.log(checkMate(piece_selected));
             move.push(piece_selected+finalPosition);
-            //check = isCheck(piece_selected[0],existingPiece); // checking for check
             if(currentTurn == 'white' && move_count != 0){// need to add the validation for draw
                 moves.push(storeMoves(move));
                 move = [];
