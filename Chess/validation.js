@@ -34,31 +34,37 @@ function checkMate(piece){
     }
     let inCheck = isCheck(pieceColour);
     let possibleMoves = inCheck.possibleMoves;
-    console.log(possibleMoves);
     if(possibleMoves && !inCheck.valid){//checking if u can block or kill the piece
+        console.log(possibleMoves);
         for(let move of possibleMoves){
             let moveId = '#' + move;
-            console.log(move);
             let target = document.body.querySelector(moveId);
-            console.log(target);
+            console.log(move);
             for(let pawn of pawns){
                 if(isValid(piecesClass[1].slice(1), pawn.parentNode.id, move,target,pawn,true)) return 'validGame';
             }
+            console.log('pawn block possible');
             for(let knight of knights){
-                console.log(knight);
                 if(isValid(piecesClass[2].slice(1), knight.parentNode.id, move,target,knight,true)) return 'validGame';
             }
+            console.log('knight block possible');
             for(let bishop of bishops){
                 if(isValid(piecesClass[3].slice(1), bishop.parentNode.id, move,target,bishop,true)) return 'validGame';
             }
+            console.log('bishop block possible');
             for(let rook of rooks){
                 if(isValid(piecesClass[4].slice(1), rook.parentNode.id, move,target,rook,true)) return 'validGame';
             }
+            console.log('rook block possible');
             for(let queen of queens){
                 if(isValid(piecesClass[5].slice(1), queen.parentNode.id, move,target,queen,true)) return 'validGame';
             }
+            console.log('queen block possible');
         }
+        console.log('no possible move');
     }
+    console.log('no possible block');
+    console.log(kingCanMove);
     if(kingCanMove == false){//checkmate
         if(!inCheck.valid){
             console.log('checkmate');
@@ -252,6 +258,7 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
 
 function checkBlackPawnMove(initialFile,initialRank,finalPos){
     let finalId = '#'+finalPos;
+    let pawn = document.getElementById(initialFile+initialRank);
     let pieceOpp = document.body.querySelector(finalId).children;
     if(pieceOpp.length != 0){
         pieceOpp = pieceOpp[0].classList[1][0];
@@ -264,6 +271,7 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
     if (initialRank === 7 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 5 && pieceOpp != 'w'){
         let moveAhead = '#' + initialFile + (initialRank - 1);
         let oneMoveAhead = document.body.querySelector(moveAhead);
+        document.getElementById(initialFile+initialRank).children[0].classList.add('en-passant');
         if(oneMoveAhead.children.length != 0) return false;
         else return true;
     }
@@ -272,12 +280,23 @@ function checkBlackPawnMove(initialFile,initialRank,finalPos){
     && pieceOpp == 'w') {
         return true;
     }
+    if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank - 1 && 
+    pawn.previousSibling.children.length > 0 && pawn.previousSibling.children[0].classList.contains('en-passant')){
+        pawn.previousSibling.children[0].remove();
+        return true;
+    }
+    else if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank - 1 && 
+    pawn.nextSibling.children.length > 0 && pawn.nextSibling.children[0].classList.contains('en-passant')){
+        pawn.nextSibling.children[0].remove();
+        return true;
+    }
     return false;
 }
 
 function checkWhitePawnMove(initialFile,initialRank,finalPos){
     let finalId = '#'+finalPos;
     let pieceOpp = document.body.querySelector(finalId).children;
+    let pawn = document.getElementById(initialFile+initialRank);
     if(pieceOpp.length != 0){
         pieceOpp = pieceOpp[0].classList[1][0];
     }
@@ -288,16 +307,24 @@ function checkWhitePawnMove(initialFile,initialRank,finalPos){
     // double move on first turn
     if (initialRank === 2 && finalPos[0] === initialFile && parseInt(finalPos[1]) === 4 && pieceOpp != 'b'){
         let moveAhead = '#' + initialFile + (initialRank + 1);
-        //console.log(moveAhead);
+        document.getElementById(initialFile+initialRank).children[0].classList.add('en-passant');
         let oneMoveAhead = document.body.querySelector(moveAhead);
-        // console.log(oneMoveAhead);
-        // console.log(oneMoveAhead.children);
         if(oneMoveAhead.children.length != 0) return false;
         else return true;
     }
     // capturing
     if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1
      && pieceOpp == 'b'){
+        return true;
+    }
+    if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1 && 
+    pawn.previousSibling.children.length > 0 && pawn.previousSibling.children[0].classList.contains('en-passant')){
+        pawn.previousSibling.children[0].remove();
+        return true;
+    }
+    else if (Math.abs(finalPos[0].charCodeAt(0) - initialFile.charCodeAt(0)) === 1 && parseInt(finalPos[1]) === initialRank + 1 && 
+    pawn.nextSibling.children.length > 0 && pawn.nextSibling.children[0].classList.contains('en-passant')){
+        pawn.nextSibling.children[0].remove();
         return true;
     }
     return false;

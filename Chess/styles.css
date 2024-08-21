@@ -2,7 +2,7 @@
 body {
     display: flex;
     flex-direction: row-reverse;
-    justify-content: center;
+    justify-content: space-around;
     align-content: center;
     gap :100px;
     width: 100%;
@@ -17,7 +17,7 @@ body {
     flex-direction: row;
     height : 80px;
     width: 260px;
-    transform: translate(-300px,20px);
+    transform: translate(-250px,20px);
     border: 1px solid black;
     border-radius: 8px;
     background-color: #008080;
@@ -27,7 +27,7 @@ button{
     height: 100%;
     width: 100%;
     font-size: 30px;
-    background-color: #008080;
+    background-color: hsl(180, 21%, 71%);
     border: 1px solid black;
     cursor: pointer;
 }
@@ -41,13 +41,14 @@ button{
 .new-game{
     height: 100px;
     width: 200px;
-    background-color: #008080;
-    transform: translateY(250px);
+    background-color: hsl(180, 22%, 79%);
+    transform: translate(140px,250px);
     font-size: 20px;
     border-radius: 8px;
 }
 .game{
     padding-top: 20px;
+    transform: translate(200px);
     display: flex;
     flex-direction: column;
     justify-content: center;

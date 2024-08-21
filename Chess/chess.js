@@ -59,17 +59,17 @@ if (window.user_current.colour === 'black') {
 }
 let draggedPiece = null; // storing the dragged piece
 
-document.addEventListener('dragstart', (e) => {
+function dragStartHandler(e) {
     if (e.target.classList.contains('piece') && !e.target.classList.contains('disabled')) {
         draggedPiece = e.target;
     }
-});
+};
 
-document.addEventListener('dragover', (e) => {
+function dragOverHandler(e){
     e.preventDefault(); 
-});
+};
 
-document.addEventListener('drop', (e) => {
+function dropHandler(e){
     e.preventDefault();
     // finding target square
     let target = e.target;
@@ -88,6 +88,7 @@ document.addEventListener('drop', (e) => {
                     target.appendChild(draggedPiece); 
                     if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){
                         handlePromotion(piece_selected[0],target);
+                        target.removeChild(draggedPiece);
                     }
                     // changing the position of the piece according to move
                     draggedPiece = null; // resetting piece
@@ -96,14 +97,27 @@ document.addEventListener('drop', (e) => {
             }
             else{
                 target.appendChild(draggedPiece); 
-                if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){                  
+                if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){         
                     handlePromotion(piece_selected[0],target);
+                    target.removeChild(draggedPiece);
                 }
                 // changing the position of the piece according to move
                 draggedPiece = null; // resetting piece
                 currentTurn = currentTurn === 'white' ? 'black' : 'white'
             }
-            console.log(checkMate(piece_selected));
+            let gameStatus = checkMate(piece_selected);
+            if (gameStatus == 'checkmate') {
+                setTimeout(() => {
+                    alert('checkmate');
+                  }, "500");
+                disableAllEvents();
+            }
+            else if (gameStatus == 'stalemate') {
+                setTimeout(() => {
+                    alert('stalemate');
+                  }, "500");
+                disableAllEvents();
+            }
             move.push(piece_selected+finalPosition);
             if(currentTurn == 'white' && move_count != 0){// need to add the validation for draw
                 moves.push(storeMoves(move));
@@ -122,6 +136,9 @@ document.addEventListener('drop', (e) => {
                     else{
                         piece.classList.add('disabled');
                     }
+                    if(piece.classList.contains('en-passant') && piece.classList.contains('bp')){
+                        piece.classList.remove('en-passant');
+                    }
                 })
                 
             }
@@ -133,9 +150,26 @@ document.addEventListener('drop', (e) => {
                     else{
                         piece.classList.add('disabled');
                     }
+                    if(piece.classList.contains('en-passant') && piece.classList.contains('wP')){
+                        piece.classList.remove('en-passant');
+                    }
                 })
             }
         }
     }
-});
+};
+document.addEventListener('dragstart', dragStartHandler);
+document.addEventListener('dragover', dragOverHandler);
+document.addEventListener('drop', dropHandler);
 
+
+function disableAllEvents() {
+    const pieces = document.querySelectorAll('.piece');
+    pieces.forEach(piece => {
+        piece.setAttribute('draggable', false);
+    });
+
+    document.removeEventListener('dragstart', dragStartHandler);
+    document.removeEventListener('dragover', dragOverHandler);
+    document.removeEventListener('drop', dropHandler);
+}
