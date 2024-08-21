@@ -432,12 +432,23 @@ function checkBishopMove(initialFile,initialRank,finalPos) {
 function checkKingMove(initialFile,initialRank,finalPos,check){
     const moveKing = [[1, 1], [1, 0], [1, -1], [0, -1], 
     [0, 1], [-1, 1], [-1, 0], [-1, -1]]; // all possible movements of king
+    const kingPosition = document.body.querySelector(`#${(initialFile + initialRank)}`);  
+    const king = kingPosition.children[0].classList[1];
+    const kingOpp = (king == 'wK') ? 'bk' : 'wK';
+    const kingOppPiece = document.body.querySelector(`.${kingOpp}`);
+    let possibleOppMoves = [];
+    for(let m of moveKing){
+        let possibleFile = String.fromCharCode(kingOppPiece.parentNode.id.charCodeAt(0) + m[0]);
+        let possibleRank = parseInt(kingOppPiece.parentNode.id[1]) + m[1];
+        if(possibleFile >= 'a' && possibleFile <= 'h' && possibleRank >= 1 && possibleRank <= 8){
+            possibleOppMoves.push(possibleFile+possibleRank);
+        }
+    }
     let possibleMoves = [];
     for(let m of moveKing){
         let possibleFile = String.fromCharCode(initialFile.charCodeAt(0) + m[0]);
         let possibleRank = initialRank + m[1];
-        if(possibleFile >= 'a' && possibleFile <= 'h' && possibleRank >= 1 
-        && possibleRank <= 8){
+        if(possibleFile >= 'a' && possibleFile <= 'h' && possibleRank >= 1 && possibleRank <= 8 && !possibleOppMoves.includes(possibleFile+possibleRank)){
             possibleMoves.push(possibleFile+possibleRank);
             if((possibleFile + possibleRank) === finalPos){
                 return {
@@ -449,11 +460,10 @@ function checkKingMove(initialFile,initialRank,finalPos,check){
     }
     if(((initialFile+initialRank) == 'e8' || (initialFile+initialRank) == 'e1') && check){
         const finalPosition = document.body.querySelector(`#${finalPos}`);
-        const kingPosition = document.body.querySelector(`#${(initialFile + initialRank)}`);
-        const king = kingPosition.children[0].classList[1];
         const rookPosition1 = document.body.querySelector(`#${('a' + initialRank)}`);
         const rookPosition2 = document.body.querySelector(`#${('h' + initialRank)}`);
-        if(finalPosition.children.length == 0 && kingPosition.children.length > 0 && kingPosition.children[0].classList.contains('castle')){
+        const inCheck = handleCheck(king,null,(initialFile+initialRank),(initialFile+initialRank),kingPosition.children[0])
+        if(finalPosition.children.length == 0 && kingPosition.children.length > 0 && kingPosition.children[0].classList.contains('castle') && inCheck){
             if(finalPos == ('g' + initialRank) && rookPosition2.children && rookPosition2.children[0].classList.contains('castle')){
                 const square1 = document.body.querySelector(`#${('f' + initialRank)}`);
                 const rook = rookPosition2.children[0];
