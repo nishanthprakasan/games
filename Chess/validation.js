@@ -1,4 +1,3 @@
-//CASTLING LEFT
 function checkMate(piece){
     let pieceColour;
     let piecesClass; // to store all the pieces
@@ -26,7 +25,7 @@ function checkMate(piece){
     let king = document.body.querySelector(piecesClass[0]); //store position of king
     let currentPos = king.parentNode.id;
     let kingCanMove = false;
-    let kingPossibleMoves = checkKingMove(currentPos[0],parseInt(currentPos[1]),null).possibleMoves; // storing whether it has possible moves
+    let kingPossibleMoves = checkKingMove(currentPos[0],parseInt(currentPos[1]),null,false).possibleMoves; // storing whether it has possible moves
     for(let move of kingPossibleMoves){
         if (kingSimulator(currentPos[0],parseInt(currentPos[1]),move,pieceColour,king)) {
             kingCanMove = true;
@@ -144,7 +143,7 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
     switch (piece) {
         case 'wP':
             if (checkWhitePawnMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -158,7 +157,7 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
 
         case 'bp':
             if (checkBlackPawnMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -174,7 +173,8 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
         case 'wR':
         case 'br':
             if (checkRookMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
+                draggedPiece.classList.remove('castle');
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -189,7 +189,7 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
         case 'wB':
         case 'bb':
             if (checkBishopMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -204,7 +204,7 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
         case 'wQ':
         case 'bq':
             if((checkRookMove(initialFile,initialRank,finalPos) || checkBishopMove(initialFile,initialRank,finalPos)) &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -219,7 +219,7 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
         case 'wN':
         case 'bn':
             if (checkKnightMove(initialFile,initialRank,finalPos) &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -233,8 +233,9 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
             
         case 'wK':
         case 'bk':
-            if (checkKingMove(initialFile,initialRank,finalPos).valid &&
-            handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+            if (checkKingMove(initialFile,initialRank,finalPos,true).valid &&
+            handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
+                draggedPiece.classList.remove('castle');
                 if(existingPiece){
                     if (existingPiece.classList[1][0] !== piece[0]){
                         if(check == false) existingPiece.remove();
@@ -401,7 +402,7 @@ function checkBishopMove(initialFile,initialRank,finalPos) {
     return false;
 }
 
-function checkKingMove(initialFile,initialRank,finalPos){
+function checkKingMove(initialFile,initialRank,finalPos,check){
     const moveKing = [[1, 1], [1, 0], [1, -1], [0, -1], 
     [0, 1], [-1, 1], [-1, 0], [-1, -1]]; // all possible movements of king
     let possibleMoves = [];
@@ -419,11 +420,41 @@ function checkKingMove(initialFile,initialRank,finalPos){
             }
         }
     }
-    if(possibleMoves.length === 0){
-        return {
-            possibleMoves : possibleMoves,
-            valid : false
-        };
+    if(((initialFile+initialRank) == 'e8' || (initialFile+initialRank) == 'e1') && check){
+        const finalPosition = document.body.querySelector(`#${finalPos}`);
+        const kingPosition = document.body.querySelector(`#${(initialFile + initialRank)}`);
+        const king = kingPosition.children[0].classList[1];
+        const rookPosition1 = document.body.querySelector(`#${('a' + initialRank)}`);
+        const rookPosition2 = document.body.querySelector(`#${('h' + initialRank)}`);
+        if(finalPosition.children.length == 0 && kingPosition.children.length > 0 && kingPosition.children[0].classList.contains('castle')){
+            if(finalPos == ('g' + initialRank) && rookPosition2.children && rookPosition2.children[0].classList.contains('castle')){
+                const square1 = document.body.querySelector(`#${('f' + initialRank)}`);
+                const rook = rookPosition2.children[0];
+                if(square1.children.length == 0 && handleCheck(king,finalPosition.querySelector('.piece'),(initialFile+initialRank),square1.id,kingPosition.children[0])){
+                    rook.classList.remove('castle');
+                    square1.appendChild(rook);
+                    return {
+                        possibleMoves : possibleMoves,
+                        valid : true
+                    };
+                }
+            }
+            else if(finalPos == ('c' + initialRank) && rookPosition1.children && rookPosition1.children[0].classList.contains('castle')){
+                console.log('entered');
+                const square1 = document.body.querySelector(`#${('d' + initialRank)}`);
+                const square2 = document.body.querySelector(`#${('b' + initialRank)}`);
+                const rook = rookPosition1.children[0];
+                if(square1.children.length == 0 && handleCheck(king,finalPosition.querySelector('.piece'),(initialFile+initialRank),square1.id,kingPosition.children[0])
+                && square2.children.length == 0){
+                    rook.classList.remove('castle');
+                    square1.appendChild(rook);
+                    return {
+                        possibleMoves : possibleMoves,
+                        valid : true
+                    };
+                }
+            }
+        }
     }
     return{
         possibleMoves : possibleMoves,
@@ -432,7 +463,7 @@ function checkKingMove(initialFile,initialRank,finalPos){
     
 }
 
-function handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece){
+function handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece){//simulating the moved piece
     let initialSquare = document.getElementById(initialPos);
     let finalSquare = document.getElementById(finalPos);
     let pieceColour = null;
@@ -766,8 +797,8 @@ function kingSimulator(initialFile,initialRank,finalPos,piece,draggedPiece){//si
     let initialPos = initialFile + initialRank;
     let target = document.getElementById(finalPos);
     const existingPiece = target.querySelector('.piece');
-    if (checkKingMove(initialFile,initialRank,finalPos).valid &&
-    handleCheck(piece,existingPiece,target,initialPos,finalPos,draggedPiece)){
+    if (checkKingMove(initialFile,initialRank,finalPos,false).valid &&
+    handleCheck(piece,existingPiece,initialPos,finalPos,draggedPiece)){
         if(existingPiece){
             if (existingPiece.classList[1][0] !== piece[0]){
                 return true;//if it can capture
@@ -823,7 +854,7 @@ function promote(colour) {
     });
 }
 
-async function handlePromotion(colour,target,draggedPiece) {
+async function handlePromotion(colour,target) {
     const pieceChosen = await promote(colour); // Wait for the piece to be chosen
     const pieceElement = document.createElement('div');
     pieceElement.classList.add('piece'); // Storing it as a piece

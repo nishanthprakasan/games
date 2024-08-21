@@ -33,6 +33,9 @@ for (let i = 0; i < 8; i++) {
             const pieceElement = document.createElement('div');
             pieceElement.classList.add('piece'); // storing it as a piece
             pieceElement.classList.add(piece); // storing the name of piece
+            if(piece[1].toLowerCase() == 'r' || piece[1].toLowerCase() == 'k'){
+                pieceElement.classList.add('castle');
+            } 
             pieceElement.innerText = pieceSymbols[piece];
             pieceElement.setAttribute('draggable', true);
             //disabling the movement of opposite side pieces
@@ -84,7 +87,7 @@ document.addEventListener('drop', (e) => {
                 if((draggedPiece.classList[1][0] !== existingPiece.classList[1][0])){
                     target.appendChild(draggedPiece); 
                     if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){
-                        handlePromotion(piece_selected[0],target,draggedPiece);
+                        handlePromotion(piece_selected[0],target);
                     }
                     // changing the position of the piece according to move
                     draggedPiece = null; // resetting piece
@@ -94,7 +97,7 @@ document.addEventListener('drop', (e) => {
             else{
                 target.appendChild(draggedPiece); 
                 if((target.id[1] == 8 || target.id[1] == 1) && draggedPiece.classList[1][1].toLowerCase() == 'p'){                  
-                    handlePromotion(piece_selected[0],target,draggedPiece);
+                    handlePromotion(piece_selected[0],target);
                 }
                 // changing the position of the piece according to move
                 draggedPiece = null; // resetting piece
