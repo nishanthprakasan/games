@@ -5,16 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chessboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
+    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <div class="promotion-box">
-        <div class="promotion-piece"><button class="queen-button"></button></div>
-        <div class="promotion-piece"><button class="rook-button"></button></div>
-        <div class="promotion-piece"><button class="bishop-button"></button></div>
-        <div class="promotion-piece"><button class="knight-button"></button></div>
+    <div class="game-details">
+        <div class="move-store"> 
+        </div>
+        <div class="result-buttons">
+            <button id = "draw-button">
+                <div class="draw-icon">
+                    <i class="fa-solid fa-1 fa-xs"></i>
+                    <i class="fa-solid fa-slash fa-rotate-90 fa-xs"></i>
+                    <i class="fa-solid fa-2 fa-xs"></i>
+                </div>
+                Draw
+            </button>
+            <button id = "resign-button">
+                <i class="fa-solid fa-flag "></i>
+                Resign</button>
+        </div> 
     </div>
-    <button class="new-game">New Game</button>
+    <div class="game-options">
+        <div class="promotion-box">
+            <div class="promotion-piece"><button class="queen-button"></button></div>
+            <div class="promotion-piece"><button class="rook-button"></button></div>
+            <div class="promotion-piece"><button class="bishop-button"></button></div>
+            <div class="promotion-piece"><button class="knight-button"></button></div>
+        </div>
+        <button class="new-game">New Game</button>
+    </div>
     <div class="game">
+        <div class="game-result">
+            <div class="result">
+                <p id = 'status'></p>
+                <p id = 'status-info'></p>
+            </div>
+                <i class="fa-solid fa-xmark " id="close-icon"></i>
+        </div>
         <span>nishanth 1200</span>
         <div class="chessboard">
             <!-- adding squares and pieces done by js-->

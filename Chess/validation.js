@@ -1,4 +1,5 @@
-function checkMate(piece){
+// NEED TO ADD : TIMER, ADD STOREMOVES FOR PROMOTION
+function gameStatus(piece){
     let pieceColour;
     let piecesClass; // to store all the pieces
     //storing all possible one step ahead moves for pieces to check for stalemate
@@ -462,7 +463,7 @@ function checkKingMove(initialFile,initialRank,finalPos,check){
         const finalPosition = document.body.querySelector(`#${finalPos}`);
         const rookPosition1 = document.body.querySelector(`#${('a' + initialRank)}`);
         const rookPosition2 = document.body.querySelector(`#${('h' + initialRank)}`);
-        const inCheck = handleCheck(king,null,(initialFile+initialRank),(initialFile+initialRank),kingPosition.children[0])
+        const inCheck = handleCheck(king,null,(initialFile+initialRank),(initialFile+initialRank),kingPosition.children[0]);
         if(finalPosition.children.length == 0 && kingPosition.children.length > 0 && kingPosition.children[0].classList.contains('castle') && inCheck){
             if(finalPos == ('g' + initialRank) && rookPosition2.children && rookPosition2.children[0].classList.contains('castle')){
                 const square1 = document.body.querySelector(`#${('f' + initialRank)}`);
@@ -892,25 +893,24 @@ function promote(colour) {
 }
 
 async function handlePromotion(colour,target) {
-    const pieceChosen = await promote(colour); // Wait for the piece to be chosen
+    const pieceChosen = await promote(colour);
     const pieceElement = document.createElement('div');
-    pieceElement.classList.add('piece'); // Storing it as a piece
-    pieceElement.classList.add(pieceChosen.piece); // Storing the name of piece
+    pieceElement.classList.add('piece'); // storing it as a piece
+    pieceElement.classList.add(pieceChosen.piece); // storing the name of piece
     pieceElement.innerText = pieceChosen.logo;
     pieceElement.setAttribute('draggable', true);
     target.appendChild(pieceElement);
 }
 
 function storeMoves(move){
-    let notation_move = [];
-    move.forEach(element => {
-        if(element[1].toLowerCase() == 'p'){
-            notation_move.push(element.substring(2));
-        }
-        else{
-            notation_move.push(element[1].toUpperCase() + element.substring(2));
-        }
-    });
+    let notation_move;
+    if (move[0] == 'O') notation_move = move;
+    else if(move[1].toLowerCase() == 'p'){
+        notation_move = move.substring(2);
+    }
+    else{
+        notation_move = move[1].toUpperCase() + move.substring(2);
+    }
     return notation_move;
 }
 
