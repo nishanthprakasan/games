@@ -1,4 +1,4 @@
-// NEED TO ADD : TIMER, ADD STOREMOVES FOR PROMOTION
+// NEED TO ADD : ASSIGNING PIECES TO CORRECT COLOUR(after we shit to django)
 function gameStatus(piece){
     let pieceColour;
     let piecesClass; // to store all the pieces
@@ -913,4 +913,3 @@ function storeMoves(move){
     }
     return notation_move;
 }
-

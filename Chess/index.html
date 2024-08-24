@@ -34,7 +34,15 @@
             <div class="promotion-piece"><button class="bishop-button"></button></div>
             <div class="promotion-piece"><button class="knight-button"></button></div>
         </div>
-        <button class="new-game">New Game</button>
+        <div class="new-game-option">
+            <div class="time-control">
+                <button id = '1-min'>1 min</button>
+                <button id = '3-min'>3 min</button>
+                <button id = '5-min'>5 min</button>
+                <button id = '10-min'>10 min</button>
+            </div>
+            <button class="new-game">New Game</button>
+        </div>
     </div>
     <div class="game">
         <div class="game-result">
@@ -44,11 +52,15 @@
             </div>
                 <i class="fa-solid fa-xmark " id="close-icon"></i>
         </div>
-        <span>nishanth 1200</span>
+        <div class="player-black">
+            <span class = 'player-details-black'>kagu 1200</span><span class="time-player-black">0:00</span>
+        </div>
         <div class="chessboard">
             <!-- adding squares and pieces done by js-->
         </div>
-        <span>kagu 1200</span>
+        <div class="player-white">
+            <span class = 'player-details-white'>nishanth 1200</span><span class = 'time-player-white'>0:00</span>
+        </div>
     </div>
     <script>
         window.user_current = {

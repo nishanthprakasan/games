@@ -100,18 +100,32 @@ body {
 }
 .game{
     margin-top: 20px;
+    gap: 2px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
+    pointer-events: none;
 }
- span{
+.player-black ,.player-white{
+    display: flex;
+    justify-content: space-between;
+    width: 480px;
     text-align: left;
-    transform: translateX(-185px);
     color: black;
     font-weight: 500;
- }
+}
+
+
+.time-player-white, .time-player-black{
+    text-align: center;
+    height: 18px;
+    width: 45px;
+    border: 1px solid black;
+    background-color: rgb(190, 187, 187);
+}
+
 .chessboard {
     display: grid;
     grid-template-columns: repeat(8, 60px); 
@@ -173,6 +187,33 @@ body {
     right : 10px;
     cursor: pointer;
 }
+
+.new-game-option{
+    gap : 2px;
+    width: 250px;
+    height: 100px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.time-control{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.time-control button{
+    background-color: transparent;
+    height: 40px;
+    width: 25%;
+    border: 1px solid black;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 
 @keyframes gameEnd{
     from{

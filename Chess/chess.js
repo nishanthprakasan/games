@@ -1,4 +1,25 @@
 //lower case - black upper case - white
+
+let currentTurn = 'white'; 
+let move_count = 0;
+let fiftyMoveDrawCount = 0;
+let pieceCount = 32;
+let move = [];//storing one line of move
+let moves = [];// storing all the moves
+let check = false;//storing status of king check
+let whiteTimer = 0;
+let blackTimer = 0;
+let whiteTimeLeft = 0;
+let blackTimeLeft = 0;
+const game = document.querySelector('.game');
+const chessboard = document.querySelector('.chessboard');
+const moveStore = document.body.querySelector('.move-store');
+const gameResultBox = document.body.querySelector('.game-result');
+const gameResult = document.body.querySelector('.result');
+const closeIcon = document.body.querySelector('close-icon');
+const resultText = gameResult.querySelectorAll('p');
+const whiteTime = document.body.querySelector('.time-player-white');
+const blackTime = document.body.querySelector('.time-player-black');
 const initialBoard = [
     ["br", "bn", "bb", "bq", "bk", "bb", "bn", "br"],
     ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
@@ -15,19 +36,6 @@ const pieceSymbols = {
     "wR": "♖", "wN": "♘", "wB": "♗", "wQ": "♕", "wK": "♔", "wP": "♙"
 };
 
-let currentTurn = 'white'; 
-let move_count = 0;
-let fiftyMoveDrawCount = 0;
-let pieceCount = 32;
-let move = [];//storing one line of move
-let moves = [];// storing all the moves
-let check = false;//storing status of king check
-const chessboard = document.querySelector('.chessboard');
-const moveStore = document.body.querySelector('.move-store');
-const gameResultBox = document.body.querySelector('.game-result');
-const gameResult = document.body.querySelector('.result');
-const closeIcon = document.body.querySelector('close-icon');
-const resultText = gameResult.querySelectorAll('p');
 
 function setBoard(){
     for (let i = 0; i < 8; i++) {
@@ -66,8 +74,72 @@ if (window.user_current.colour === 'black') {
         square.classList.add('flip');
     });
 }
-let draggedPiece = null; // storing the dragged piece
 
+ function timeSelection(e){
+    return new Promise((resolve) =>{
+        if(e.target.id == '1-min') resolve ('1');
+        else if(e.target.id == '3-min') resolve ('3');
+        else if(e.target.id == '5-min') resolve ('5');
+        else if(e.target.id == '10-min') resolve ('10');
+    });
+}
+
+async function timeControl(e) {
+    let time = await(timeSelection(e));
+    if(time){
+        document.body.querySelector('.game').style.pointerEvents = 'auto'; // re enabling the game pieces after choosing time control
+        whiteTimeLeft = blackTimeLeft = parseInt(time) * 60;
+        updateTimer();
+        inititalTimer();
+    }
+}
+document.addEventListener('click' , timeControl,{once : true})
+function updateTimer(){
+    whiteTime.innerHTML = `${Math.floor(whiteTimeLeft / 60)}:${('0' + (whiteTimeLeft % 60)).slice(-2)}`;
+    blackTime.innerHTML = `${Math.floor(blackTimeLeft / 60)}:${('0' + (blackTimeLeft % 60)).slice(-2)}`;
+}
+function inititalTimer(){
+    whiteTimer = setInterval(() => {
+        if(whiteTimeLeft > 0){
+            whiteTimeLeft--;
+            updateTimer();
+        }
+        if(whiteTimeLeft == 0){
+            clearInterval(whiteTimer);
+            gameMessage('b','Timeout','Timeout');
+        }
+    },1000);
+}
+
+function timer(){//swapping as we start the timer as soon as he chooses the time button
+    if(currentTurn == 'black'){
+        clearInterval(blackTimer);
+        whiteTimer = setInterval(() => {
+            if(whiteTimeLeft > 0){
+                whiteTimeLeft--;
+                updateTimer();
+            }
+            if(whiteTimeLeft == 0){
+                clearInterval(whiteTimer);
+                gameMessage('b','Timeout','Timeout');
+            }
+        },1000);
+    }
+    else{
+        clearInterval(whiteTimer);
+        blackTimer = setInterval(() => {
+            if(blackTimeLeft > 0){
+                blackTimeLeft--;
+                updateTimer();
+            }
+            if(blackTimeLeft == 0){
+                clearInterval(blackTimer);
+                gameMessage('w','Timeout','Timeout');
+            }
+        },1000);
+    }
+}
+let draggedPiece = null; // storing the dragged piece
 function dragStartHandler(e) {
     if (e.target.classList.contains('piece') && !e.target.classList.contains('disabled')) {
         draggedPiece = e.target;
@@ -81,6 +153,7 @@ function dragOverHandler(e){
 function dropHandler(e){
     e.preventDefault();
     // finding target square
+    if (move_count == 0) clearInterval(whiteTimer);
     let target = e.target;
     while (target && !target.classList.contains('square')) {
         target = target.parentElement;
@@ -98,6 +171,7 @@ function dropHandler(e){
         king = document.body.querySelector('.bk');
         kingOpp = document.body.querySelector('.wK');
     }    let kingInitial = king.parentNode.id;
+    timer();
     if (isValid(piece_selected,initialPosition,finalPosition,target,draggedPiece,false) && draggedPiece) {
         const existingPiece = target.querySelector('.piece');
         // checking for empty square or opp square
@@ -129,15 +203,16 @@ function dropHandler(e){
             let temp;
             let currentPieceCount = document.body.querySelectorAll('.piece').length;
             let kingFinal = king.parentNode.id;
+            let check = handleCheck(kingOpp.classList[1],null,kingOpp.parentNode.id,kingOpp.parentNode.id,kingOpp);
             if (gamestatus == 'checkmate') temp = piece_selected + finalPosition + '#';
             else if(Math.abs(kingInitial[0].charCodeAt(0) - kingFinal[0].charCodeAt(0)) == 2){
                 if (kingFinal[0] == 'g') temp = 'O-O';
                 else temp = 'O-O-O';
             }
-            else if (!handleCheck(kingOpp.classList[1],null,kingOpp.parentNode.id,kingOpp.parentNode.id,kingOpp)) temp = piece_selected + finalPosition + '+';
+            else if (!check) temp = piece_selected + finalPosition + '+';
             else if(currentPieceCount == pieceCount) temp = piece_selected + finalPosition;
             else if(currentPieceCount == (pieceCount - 1)){
-                if (!handleCheck(kingOpp.classList[1],null,kingOpp.parentNode.id,kingOpp.parentNode.id,kingOpp)){
+                if (!check){
                     if (!piece_selected[1].toLowerCase == 'p') temp = piece_selected + 'x' + finalPosition + '+';
                     else temp = piece_selected +initialPosition[0] + 'x' + finalPosition + '+';
                 }
@@ -244,7 +319,7 @@ document.addEventListener('click',gameButton);
 
 async function gameMessage(colour,message,status){
     let pieceColour = (colour == 'w') ? 'White' : 'Black';
-    if (message == 'Checkmate' || message == 'Resign') pieceColour += ' wins by ' + message;
+    if (message == 'Checkmate' || message == 'Resign' || message == 'Timeout') pieceColour += ' wins by ' + message;
     else pieceColour = 'Game drawn by ' + message;
     let messages = [status,pieceColour]
     gameResultBox.style.visibility = 'visible';
@@ -270,7 +345,7 @@ function disableAllEvents() {
     setTimeout(() => {
         chessboard.innerHTML = '';
         moveStore.innerHTML = '';
+        document.addEventListener('click' , timeControl,{once : true})
         setBoard();
       }, "100");
-
 }
