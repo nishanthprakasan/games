@@ -75,7 +75,7 @@ if (window.user_current.colour === 'black') {
     });
 }
 
- function timeSelection(e){
+function timeSelection(e){
     return new Promise((resolve) =>{
         if(e.target.id == '1-min') resolve ('1');
         else if(e.target.id == '3-min') resolve ('3');
@@ -84,16 +84,32 @@ if (window.user_current.colour === 'black') {
     });
 }
 
+function newGame(e){
+    return new Promise((resolve) => {
+        if(e.target.id == 'new-game') resolve(true);
+    });
+}
+
 async function timeControl(e) {
-    let time = await(timeSelection(e));
-    if(time){
-        document.body.querySelector('.game').style.pointerEvents = 'auto'; // re enabling the game pieces after choosing time control
+     let time = await timeSelection(e);
+    if (time) {
         whiteTimeLeft = blackTimeLeft = parseInt(time) * 60;
         updateTimer();
+        document.addEventListener('click', newGameControl, { once: true });
+    }
+}
+document.addEventListener('click' , timeControl);
+async function newGameControl(e) {
+    console.log('entered');
+    let newgame = await newGame(e);
+	console.log(newgame);
+    if (newgame) {
+        console.log("New game started");
+        document.body.querySelector('.game').style.pointerEvents = 'auto';
         inititalTimer();
     }
 }
-document.addEventListener('click' , timeControl,{once : true})
+
 function updateTimer(){
     whiteTime.innerHTML = `${Math.floor(whiteTimeLeft / 60)}:${('0' + (whiteTimeLeft % 60)).slice(-2)}`;
     blackTime.innerHTML = `${Math.floor(blackTimeLeft / 60)}:${('0' + (blackTimeLeft % 60)).slice(-2)}`;

@@ -75,7 +75,7 @@ body {
     border-radius: 8px;
     background-color: #008080;
 }
-.queen-button , .rook-button , .knight-button , .bishop-button , .new-game{
+.queen-button , .rook-button , .knight-button , .bishop-button , #new-game{
     height: 100%;
     width: 100%;
     font-size: 30px;
@@ -90,7 +90,7 @@ body {
     width : 25%;
     border: transparent;
 }
-.new-game{
+#new-game{
     height: 50px;
     width: 250px;
     background-color: hsl(180, 22%, 79%);
