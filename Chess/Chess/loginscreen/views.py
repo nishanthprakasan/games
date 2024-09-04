@@ -67,9 +67,13 @@ def update_action(request):
             userinfo.save()
             opponent, room_id = findingOpponent(username)
             print(room_id,opponent)
-            if opponent:
+            if opponent and userinfo.activity != 'in game':
                 GameInfo.objects.create(gameId = room_id, user1 = opponent,user2 = username,gameStatus = 'ongoing')
-                return JsonResponse({'status': 'redirect', 'room_id': room_id})
+                userinfo.activity = 'in game'
+                userinfo.save()
+                print('user2',request.user.username , 'black')
+                return JsonResponse({'status': 'redirect', 'room_id': room_id , 'opponent' :GameInfo.objects.get(user2 = username).user1 , 'user' : username,
+                                     'colour' : 'black'})
             else:
                 return JsonResponse({'status': 'waiting_for_opponent' , 'room_id' : None})
         elif action == 'game_end':
@@ -81,11 +85,16 @@ def update_action(request):
 
 @csrf_exempt
 @login_required
-def checkOpp(request):
+def checkOpp(request):#user 1 is black user 2 is white
     if GameInfo.objects.filter(user1=request.user.username).exists():#user1 contians opponents name
-        if GameInfo.objects.get(user1 = request.user.username).gameStatus == 'ongoing':
-            return JsonResponse({'status': 'redirect', 'room_id': GameInfo.objects.get(user1 = request.user.username).gameId})
-    return render(request, 'home.html', {'username': request.user.username})
+        if GameInfo.objects.get(user1 = request.user.username).gameStatus == 'ongoing' and UserInfo.objects.get(username = request.user.username).activity != 'in game':
+            print('user1',request.user.username , 'white')
+            userinfo = UserInfo.objects.get(username=request.user.username)
+            userinfo.activity = 'in game'
+            userinfo.save()
+            return JsonResponse({'status': 'redirect', 'room_id': GameInfo.objects.get(user1 = request.user.username).gameId , 'user' : request.user.username,
+                                 'opponent' :GameInfo.objects.get(user1 = request.user.username).user2 , 'colour' : 'white'})
+    return render(request, 'home.html', {'username': request.user.username })
 
 
 

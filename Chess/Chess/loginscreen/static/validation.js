@@ -158,6 +158,11 @@ function isValid(piece, initialPos, finalPos, target ,draggedPiece,check){
                         return false;
                     }
                 }
+                const moveData = {'piece' : piece , 'initialPos' : initialPos , 'finalPos' : finalPos}
+                socket.send(JSON.stringify({
+                    'action': 'move',
+                    'data': moveData
+                }));
                 return true;
             }
             return false;

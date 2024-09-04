@@ -18,8 +18,8 @@ const gameResultBox = document.body.querySelector('.game-result');
 const gameResult = document.body.querySelector('.result');
 const closeIcon = document.body.querySelector('close-icon');
 const resultText = gameResult.querySelectorAll('p');
-const whiteTime = document.body.querySelector('.time-player-white');
-const blackTime = document.body.querySelector('.time-player-black');
+let whiteTime = document.body.querySelector('.time-player-white');
+let blackTime = document.body.querySelector('.time-player-black');
 const initialBoard = [
     ["br", "bn", "bb", "bq", "bk", "bb", "bn", "br"],
     ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
@@ -66,14 +66,6 @@ function setBoard(){
     }
 }
 setBoard();
-//setting the lower part of the board according to current users piece colour
-if (window.user_current.colour === 'black') {
-    chessboard.classList.add('flip');
-    const squares = chessboard.querySelectorAll('.piece');
-    squares.forEach(square =>{
-        square.classList.add('flip');
-    });
-}
 
 function timeSelection(e){
     return new Promise((resolve) =>{
@@ -101,17 +93,125 @@ async function timeControl(e) {
 }
 document.addEventListener('click' , timeControl);
 async function newGameControl(e) {
-    console.log('entered');
     let newgame = await newGame(e);
-	console.log(newgame);
-    if (newgame) {
-        console.log("New game started");
-        document.body.querySelector('.game').style.pointerEvents = 'auto';
-        inititalTimer();
+    if(newgame){
+        fetch(updateAction, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({
+                'action': 'new_game'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'redirect') {//user in this should be black
+                console.log(data.user , 'black')
+                document.body.querySelector('.player-details-black').innerHTML = data.opponent
+                flipBoard()
+                let roomId = data.room_id;
+                document.body.querySelector('.game').style.pointerEvents = 'auto';
+                inititalTimer();
+                const url = `ws://127.0.0.1:8000/ws/play/${roomId}/`
+                console.log(url)
+                const socket = new WebSocket(url);
+                socket.onmessage = function(e){
+                    let socketData = JSON.parse(e.data)
+                    console.log(socketData)
+                    if (socketData.action === 'move') {
+                        handleOpponentMove(socketData);
+                    }
+                }
+            } 
+            else if (data.status === 'waiting_for_opponent') {
+                console.log('Waiting for opponent...');
+                opponentRequest(data.room_id)
+            }
+        });
     }
 }
 
+function opponentRequest(id){
+    console.log('looking')
+    let intervalId = setInterval(() => {
+        fetch(checkOpp, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({
+                'action': 'new_game',
+                'id': id,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'redirect') {// user in this is white
+                clearInterval(intervalId);  
+                console.log(data.user , 'white')
+                document.body.querySelector('.game').style.pointerEvents = 'auto';
+                document.body.querySelector('.player-details-black').innerHTML = data.opponent
+                inititalTimer();
+                const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
+                console.log(url)
+                const socket = new WebSocket(url);
+                socket.onmessage = function(e){
+                    let data = JSON.parse(e.data)
+                    console.log(data)
+                    if (data.action === 'move') {
+                        handleOpponentMove(data);
+                    }
+                }  
+            }
+        });
+    }, 2000);
+}
+
+function flipBoard(){
+    chessboard.classList.add('flip');
+    const squares = chessboard.querySelectorAll('.piece');
+    squares.forEach(square =>{
+        square.classList.add('flip');
+    });
+    //need to swap the players time
+    document.body.querySelector('.time-player-black').classList.add('temp')
+    document.body.querySelector('.time-player-white').classList.add('time-player-black')
+    document.body.querySelector('.time-player-white').classList.remove('time-player-white')
+    document.body.querySelector('.temp').classList.add('time-player-white')
+    document.body.querySelector('.temp').classList.remove('time-player-black')
+    document.body.querySelector('.temp').classList.remove('temp')
+
+    whiteTime = document.body.querySelector('.time-player-white');
+    blackTime = document.body.querySelector('.time-player-black');
+    updateTimer()
+}
+
+
+function handleOpponentMove(data) {
+    const moveData = data.data;
+    const piece = moveData.piece;
+    const initialPos = moveData.initialPos;
+    const finalPos = moveData.finalPos;
+
+    const pieceElement = document.getElementById(`${initialPos}`);
+    const finalSquare = document.getElementById(`${finalPos}`);
+
+    if (finalSquare && pieceElement) {
+        const existingPiece = finalSquare.querySelector('.piece');
+        if (existingPiece) {
+            existingPiece.remove();
+        }
+
+        finalSquare.appendChild(pieceElement);
+    }
+}
+
+
 function updateTimer(){
+    console.log(whiteTime)
     whiteTime.innerHTML = `${Math.floor(whiteTimeLeft / 60)}:${('0' + (whiteTimeLeft % 60)).slice(-2)}`;
     blackTime.innerHTML = `${Math.floor(blackTimeLeft / 60)}:${('0' + (blackTimeLeft % 60)).slice(-2)}`;
 }
@@ -375,4 +475,19 @@ function disableAllEvents() {
         document.addEventListener('click' , timeControl,{once : true})
         setBoard();
       }, "100");
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }

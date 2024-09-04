@@ -67,92 +67,11 @@
             <span class="player-details-white">{{ username }}</span><span class="time-player-white">0:00</span>
         </div>
     </div>
-    <script>
-        window.user_current = {
-            colour: 'white',
-            username: '{{ username }}'
-        };
-        window.updateGameStatusUrl = "{% url 'update_action' %}";
-    </script>
     <script src="{% static 'chess.js' %}"></script>
     <script src="{% static 'validation.js' %}"></script>
-    <script type="text/javascript">
-        document.getElementById('new-game').addEventListener('click', () => {
-        fetch("{% url 'update_action' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: new URLSearchParams({
-                'action': 'new_game'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'redirect') {
-                let roomId = data.room_id;
-                const url = `ws://127.0.0.1:8000/ws/play/${roomId}/`
-                //window.location.href = `/play/${roomId}/`;
-                console.log(url)
-                const socket = new WebSocket(url);
-                socket.onmessage = function(e){
-                    let data = JSON.parse(e.data)
-                    console.log(data)
-                }
-            } 
-            else if (data.status === 'waiting_for_opponent') {
-                console.log('Waiting for opponent...');
-                opponentRequest(data.room_id)
-            }
-        });
-    });
-
-    function opponentRequest(id){
-        console.log('looking')
-        let intervalId = setInterval(() => {
-            fetch("{% url 'checkOpp' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: new URLSearchParams({
-                    'action': 'new_game',
-                    'id': id,
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'redirect') {
-                    clearInterval(intervalId);  
-                    const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
-                    //window.location.href = `/play/${data.room_id}/`;
-                    console.log(url)
-                    const socket = new WebSocket(url);
-                    socket.onmessage = function(e){
-                        let data = JSON.parse(e.data)
-                        console.log(data)
-                    }  
-                }
-            });
-        }, 2000);
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    </script>    
+    <script>
+        const checkOpp = "{% url 'checkOpp' %}"
+        const updateAction = "{% url 'update_action' %}"
+    </script> 
 </body>
 </html>
