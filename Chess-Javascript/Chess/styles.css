@@ -214,6 +214,18 @@ body {
     cursor: pointer;
 }
 
+.flip-board .player-black {
+    order: 3; /* Moves the black player below the board */
+}
+
+.flip-board .chessboard {
+    order: 2; /* Keeps the board in the middle */
+}
+
+.flip-board .player-white {
+    order: 1; /* Moves the white player above the board */
+}
+
 
 @keyframes gameEnd{
     from{

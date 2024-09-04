@@ -73,8 +73,13 @@ if (window.user_current.colour === 'black') {
     squares.forEach(square =>{
         square.classList.add('flip');
     });
+    flipBoard()
 }
 
+function flipBoard(){
+    const gameContainer = document.querySelector('.game');
+    gameContainer.classList.add('flip-board');
+    }
 function timeSelection(e){
     return new Promise((resolve) =>{
         if(e.target.id == '1-min') resolve ('1');
