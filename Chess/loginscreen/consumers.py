@@ -43,24 +43,36 @@ class ChessConsumer(WebsocketConsumer):
                     'status': json.loads(text_data)['status'],
                 }
             )
+        elif json.loads(text_data)['action'] == 'move_store':
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'move_store',
+                    'move': json.loads(text_data)['move'],
+                }
+            )
+        elif json.loads(text_data)['action'] == 'timer':
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'timer',
+                    'whiteTime': json.loads(text_data)['white_timer'],
+                    'blackTime' :json.loads(text_data)['black_timer']
+                }
+            )
 
 
     # Receive message from room group
     def game_move(self, event):
-        piece = event['piece']
-        initialPos = event['initialPos']
-        finalPos = event['finalPos']
-        colour = event['colour']
-        castle = event['castle']
-
         # Send the move data to the WebSocket
         self.send(text_data=json.dumps({
             'type': 'game_move',
-            'piece': piece,
-            'initialPos': initialPos,
-            'finalPos': finalPos,
-            'colour' : colour,
-            'castle' : castle 
+            'piece': event['piece'],
+            'initialPos': event['initialPos'],
+            'finalPos': event['finalPos'],
+            'colour' : event['colour'],
+            'castle' : event['castle']
+ 
         }))
         
     def game_status(self,event):
@@ -69,4 +81,17 @@ class ChessConsumer(WebsocketConsumer):
             'colour' : event['colour'],
             'status' : event['status'],
             'message' : event['message']
+        }))
+    
+    def move_store(self,event):
+        self.send(text_data=json.dumps({
+            'type' : 'move_store',
+            'move' : event['move']
+        }))
+    
+    def timer(self,event):
+        self.send(text_data=json.dumps({
+            'type' : 'timer',
+            'white_timer' : event['whiteTime'],
+            'black_timer' : event['blackTime']
         }))

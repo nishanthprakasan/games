@@ -1,5 +1,3 @@
-//castling not sent over socket
-// NEED TO ADD : ASSIGNING PIECES TO CORRECT COLOUR(after we shit to django)
 function gameStatus(piece){
     let pieceColour;
     let piecesClass; // to store all the pieces

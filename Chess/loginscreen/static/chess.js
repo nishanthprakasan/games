@@ -121,15 +121,31 @@ async function newGameControl(e) {
                 })
                 let roomId = data.room_id;
                 document.body.querySelector('.game').style.pointerEvents = 'auto';
-                inititalTimer();
                 const url = `ws://127.0.0.1:8000/ws/play/${roomId}/`
                 console.log(url)
                 socket = new WebSocket(url);
+                timer()
                 socket.onmessage = function(e){
                     let socketData = JSON.parse(e.data)
                     console.log(socketData)
                     if(socketData.type == 'game_status'){
                         gameMessage(socketData.colour, socketData.message,socketData.status)
+                    }
+                    if(socketData.type == 'move_store' && currentTurn == 'black'){
+                        if(move_count == 0){
+                            const moveElement = document.createElement('div');
+                            moveElement.innerHTML = '1.';
+                            moveStore.appendChild(moveElement);
+                        }
+                        else if(move_count % 2 == 0){
+                            const moveElement = document.createElement('div');
+                            moveElement.innerHTML = (move_count/2) + 1 + '.';
+                            moveStore.appendChild(moveElement);
+                        }
+                        move_count++;
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = socketData.move;
+                        moveStore.appendChild(tempDiv);
                     }
                     else if (socketData.type === 'game_move' && currentTurn == 'white') {
                         console.log('black to move')
@@ -139,6 +155,7 @@ async function newGameControl(e) {
                             if(piece.classList[1][0] == 'b') piece.classList.remove('disabled')
                         })
                         currentTurn ='black'
+                        timer()
                         console.log('inside socket' , currentTurn)
                     }
                     else{
@@ -147,6 +164,7 @@ async function newGameControl(e) {
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                         })
                         currentTurn = 'white'
+                        timer()
                     }
                 }
             } 
@@ -180,15 +198,21 @@ function opponentRequest(id){
                 colour = 'white'
                 document.body.querySelector('.game').style.pointerEvents = 'auto';
                 document.body.querySelector('.player-details-black').innerHTML = data.opponent
-                inititalTimer();
                 const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
                 console.log(url)
                 socket = new WebSocket(url);
+                timer()
                 socket.onmessage = function(e){
                     let socketData = JSON.parse(e.data)
                     console.log(data)
                     if(socketData.type == 'game_status'){
                         gameMessage(socketData.colour, socketData.message,socketData.status)
+                    }
+                    if(socketData.type == 'move_store' && currentTurn == 'white'){
+                        move_count++;
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = socketData.move;
+                        moveStore.appendChild(tempDiv);
                     }
                     else if (socketData.type === 'game_move'  && currentTurn == 'black') {
                         handleOpponentMove(socketData);
@@ -198,6 +222,7 @@ function opponentRequest(id){
                         })
                         console.log('white to move')
                         currentTurn = 'white'
+                        timer()
                     }
                     else{
                         pieces = document.body.querySelectorAll('.piece');
@@ -205,6 +230,7 @@ function opponentRequest(id){
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                         })
                         currentTurn = 'black'
+                        timer()
                     }
                 }  
             }
@@ -266,22 +292,11 @@ function updateTimer(){
     whiteTime.innerHTML = `${Math.floor(whiteTimeLeft / 60)}:${('0' + (whiteTimeLeft % 60)).slice(-2)}`;
     blackTime.innerHTML = `${Math.floor(blackTimeLeft / 60)}:${('0' + (blackTimeLeft % 60)).slice(-2)}`;
 }
-function inititalTimer(){
-    whiteTimer = setInterval(() => {
-        if(whiteTimeLeft > 0){
-            whiteTimeLeft--;
-            updateTimer();
-        }
-        if(whiteTimeLeft == 0){
-            clearInterval(whiteTimer);
-            gameEndSocket('b','Timeout','Timeout')
-            gameMessage('b','Timeout','Timeout');
-        }
-    },1000);
-}
 
 function timer(){//swapping as we start the timer as soon as he chooses the time button
-    if(currentTurn == 'black'){
+    clearInterval(whiteTimer);
+    clearInterval(blackTimer);
+    if(currentTurn == 'white'){
         clearInterval(blackTimer);
         whiteTimer = setInterval(() => {
             if(whiteTimeLeft > 0){
@@ -343,7 +358,8 @@ function dropHandler(e){
         king = document.body.querySelector('.bk');
         kingOpp = document.body.querySelector('.wK');
     }    let kingInitial = king.parentNode.id;
-    timer();
+    console.log(currentTurn)
+    // timer();
     if (isValid(piece_selected,initialPosition,finalPosition,target,draggedPiece,false) && draggedPiece) {
         const existingPiece = target.querySelector('.piece');
         // checking for empty square or opp square
@@ -391,7 +407,6 @@ function dropHandler(e){
                     else temp = piece_selected +initialPosition[0] + 'x' + finalPosition;
                 }
             }
-
             if(move_count == 0){
                 const moveElement = document.createElement('div');
                 moveElement.innerHTML = '1.';
@@ -403,10 +418,15 @@ function dropHandler(e){
                 moveStore.appendChild(moveElement);
             }
             move_count++;
+            console.log(move_count)
             const moveElement = document.createElement('div');
             moveElement.innerHTML = storeMoves(temp);
             moves.push(moveElement.innerHTML);
             moveStore.appendChild(moveElement);
+            socket.send(JSON.stringify({
+                'action' : 'move_store',
+                'move' : moveElement.outerHTML
+            }))
 
             if(currentPieceCount == pieceCount && piece_selected[1].toLowerCase() != 'p') fiftyMoveDrawCount++;
             else fiftyMoveDrawCount = 0;
@@ -440,8 +460,8 @@ function dropHandler(e){
                     gameMessage(piece_selected[0], 'Stalemate','Draw');
                   }, "500");
             }
+            pieces = document.body.querySelectorAll('.piece');
             if(currentTurn === 'black'){
-                pieces = document.body.querySelectorAll('.piece');
                 pieces.forEach(piece =>{
                     if(piece.classList.contains('en-passant') && piece.classList.contains('bp')){
                         piece.classList.remove('en-passant');
@@ -469,7 +489,6 @@ else{
     document.removeEventListener('dragover', dragOverHandler);
     document.removeEventListener('drop', dropHandler);
 }
-
 
 function gameButton(e){
     if(e.target.id == 'resign-button'){
