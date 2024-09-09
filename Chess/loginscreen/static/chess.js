@@ -110,7 +110,8 @@ async function newGameControl(e) {
                 'X-CSRFToken': getCookie('csrftoken')
             },
             body: new URLSearchParams({
-                'action': 'new_game'
+                'action': 'new_game',
+                'time' : whiteTimeLeft
             })
         })
         .then(response => response.json())
@@ -142,7 +143,7 @@ async function newGameControl(e) {
                         console.log(socketData,colour)
                         console.log('draw on opponenet screen')
                         document.body.querySelector('.draw-offer-option').style.visibility = 'visible'
-                        currentTurn = (currentTurn == 'white') ? 'black' : 'white'
+                        // currentTurn = (currentTurn == 'white') ? 'black' : 'white'
                         document.addEventListener('click',(e)=>{
                             if (e.target.id == 'accept-offer'){
                                 socket.send(JSON.stringify({
@@ -187,7 +188,8 @@ async function newGameControl(e) {
                         timer('newGameControl white move')
                         console.log('inside socket' , currentTurn)
                     }
-                    else {
+                    else if(socketData.type != 'draw_offer'){
+                        console.log(socketData)
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
@@ -218,6 +220,7 @@ async function opponentRequest(id){
             body: new URLSearchParams({
                 'action': 'new_game',
                 'id': id,
+                'time' : whiteTimeLeft
             })
         })
         .then(response => response.json())
@@ -244,7 +247,7 @@ async function opponentRequest(id){
                         console.log(socketData,colour)
                         console.log('draw on opponenet screen')
                         document.body.querySelector('.draw-offer-option').style.visibility = 'visible'
-                        currentTurn = (currentTurn == 'white') ? 'black' : 'white'
+                        // currentTurn = (currentTurn == 'white') ? 'black' : 'white'
                         document.addEventListener('click',(e)=>{
                             if (e.target.id == 'accept-offer'){
                                 socket.send(JSON.stringify({
@@ -278,7 +281,8 @@ async function opponentRequest(id){
                         console.log('white move socket(white)')
                         timer('opponentRequest white move')
                     }
-                    else{
+                    else if(socketData.type != 'draw_offer'){
+                        console.log(socketData)
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
@@ -585,7 +589,6 @@ function gameButton(e){
     }
     else if(e.target.id == 'draw-button'){
         let drawOfferColour = (colour[0] == 'w') ? 'black' : 'white'
-        currentTurn = (currentTurn == 'white') ? 'black' : 'white'
         console.log(drawOfferColour)
         socket.send(JSON.stringify({
             'action' : 'draw_offer',

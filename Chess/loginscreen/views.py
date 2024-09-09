@@ -65,11 +65,12 @@ def update_action(request):
         if action == 'new_game':
             userinfo = UserInfo.objects.get(username=request.user.username)
             userinfo.activity = 'looking for new game'  
+            userinfo.time_control = request.POST.get('time')
             opponent , room_id = findingOpponent(username)
             userinfo.save()
             opponent, room_id = findingOpponent(username)
             print(room_id,opponent)
-            if opponent and userinfo.activity != 'in game':
+            if opponent and userinfo.activity != 'in game' and request.POST.get('time') == UserInfo.objects.get(username = opponent).time_control:
                 GameInfo.objects.create(gameId = room_id, user1 = opponent,user2 = username,gameStatus = 'ongoing')
                 userinfo.activity = 'in game'
                 userinfo.save()
@@ -81,6 +82,7 @@ def update_action(request):
         elif action == 'game_end':
             userinfo = UserInfo.objects.get(username=request.user.username)
             userinfo.activity = 'logged in'  
+            userinfo.time_control = 'null'
             gameinfo = GameInfo.objects.get(gameId = request.POST.get('id'))
             gameinfo.gameStatus = 'game over'
             gameinfo.save()
@@ -98,7 +100,7 @@ def checkOpp(request):#user 1 is black user 2 is white
             print(game)
             if game.user1 == request.user.username:
                 userinfo = UserInfo.objects.get(username=request.user.username)
-                if userinfo.activity != 'in game':
+                if userinfo.activity != 'in game' and request.POST.get('time') == UserInfo.objects.get(username = game.user2).time_control:
                     print('user1', request.user.username, 'white')
                     userinfo.activity = 'in game'
                     userinfo.save()
