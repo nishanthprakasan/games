@@ -60,7 +60,16 @@ class ChessConsumer(WebsocketConsumer):
                     'blackTime' :json.loads(text_data)['black_timer']
                 }
             )
-
+        elif json.loads(text_data)['action'] == 'draw_offer':
+            print('draw offered')
+            print(json.loads(text_data)['colour'])
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type' : 'draw_offer',
+                    'colour' : json.loads(text_data)['colour']
+                }
+            )
 
     # Receive message from room group
     def game_move(self, event):
@@ -94,4 +103,11 @@ class ChessConsumer(WebsocketConsumer):
             'type' : 'timer',
             'white_timer' : event['whiteTime'],
             'black_timer' : event['blackTime']
+        }))
+
+    def draw_offer(self,event):
+        print(event['colour'])
+        self.send(text_data=json.dumps({
+            'type' : 'draw_offer',
+            'colour' : event['colour']
         }))

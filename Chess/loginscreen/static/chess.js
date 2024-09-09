@@ -86,14 +86,20 @@ function newGame(e){
 }
 
 async function timeControl(e) {
-     let time = await timeSelection(e);
+    let time = await timeSelection(e);
+    for(let time of ['1','3','5','10']){
+        if(document.getElementById(`${time}-min`).style.backgroundColor == '#4e6e68'){
+            document.getElementById(`${time}-min`).style.backgroundColor = ''
+        }
+    }
+    document.getElementById(`${time}-min`).style.backgroundColor = '#4e6e68';
     if (time) {
         whiteTimeLeft = blackTimeLeft = parseInt(time) * 60;
         updateTimer();
         document.addEventListener('click', newGameControl, { once: true });
     }
 }
-document.addEventListener('click' , timeControl);
+document.addEventListener('click' , timeControl, {once : true});
 async function newGameControl(e) {
     let newgame = await newGame(e);
     if(newgame){
@@ -110,6 +116,7 @@ async function newGameControl(e) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'redirect') {//user in this should be black
+                document.getElementById(`${whiteTimeLeft/60}-min`).style.backgroundColor = '';
                 colour = 'black'
                 console.log(data.user , 'black')
                 document.body.querySelector('.player-details-black').innerHTML = data.opponent
@@ -119,19 +126,36 @@ async function newGameControl(e) {
                 pieces.forEach(piece =>{
                     if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                 })
-                let roomId = data.room_id;
                 document.body.querySelector('.game').style.pointerEvents = 'auto';
-                const url = `ws://127.0.0.1:8000/ws/play/${roomId}/`
+                const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
                 console.log(url)
                 socket = new WebSocket(url);
-                timer()
+                console.log('black socket')
+                timer('newGameControl start')
                 socket.onmessage = function(e){
                     let socketData = JSON.parse(e.data)
                     console.log(socketData)
                     if(socketData.type == 'game_status'){
-                        gameMessage(socketData.colour, socketData.message,socketData.status)
+                        handleGameStatus(socketData.colour, socketData.message, socketData.status,data.room_id);
                     }
-                    if(socketData.type == 'move_store' && currentTurn == 'black'){
+                    if(socketData.type == 'draw_offer' && socketData.colour == colour){
+                        console.log(socketData,colour)
+                        console.log('draw on opponenet screen')
+                        document.body.querySelector('.draw-offer-option').style.visibility = 'visible'
+                        currentTurn = (currentTurn == 'white') ? 'black' : 'white'
+                        document.addEventListener('click',(e)=>{
+                            if (e.target.id == 'accept-offer'){
+                                socket.send(JSON.stringify({
+                                    'action' : 'game_status',
+                                    'colour' : colour,
+                                    'message' : 'Mutual Agreement',
+                                    'status' : 'Draw'
+                                }))
+                            }
+                            else document.body.querySelector('.draw-offer-option').style.visibility = 'hidden'
+                        })
+                    }
+                    else if(socketData.type == 'move_store' && currentTurn == 'black'){
                         if(move_count == 0){
                             const moveElement = document.createElement('div');
                             moveElement.innerHTML = '1.';
@@ -148,6 +172,10 @@ async function newGameControl(e) {
                         moveStore.appendChild(tempDiv);
                     }
                     else if (socketData.type === 'game_move' && currentTurn == 'white') {
+                        if (document.body.querySelector('.draw-offer-option').style.visibility == 'visible'){
+                            document.body.querySelector('.draw-offer-option').style.visibility = 'hidden'
+                            document.body.querySelector('.draw-offer').style.visibility = 'hidden'
+                        }
                         console.log('black to move')
                         handleOpponentMove(socketData);
                         pieces = document.body.querySelectorAll('.piece');
@@ -155,16 +183,18 @@ async function newGameControl(e) {
                             if(piece.classList[1][0] == 'b') piece.classList.remove('disabled')
                         })
                         currentTurn ='black'
-                        timer()
+                        console.log('black move socket(black)')
+                        timer('newGameControl white move')
                         console.log('inside socket' , currentTurn)
                     }
-                    else{
+                    else {
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                         })
                         currentTurn = 'white'
-                        timer()
+                        console.log('white move socket(black)')
+                        timer('newGameControl black move')
                     }
                 }
             } 
@@ -176,7 +206,7 @@ async function newGameControl(e) {
     }
 }
 
-function opponentRequest(id){
+async function opponentRequest(id){
     console.log('looking')
     let intervalId = setInterval(() => {
         fetch(checkOpp, {
@@ -193,6 +223,7 @@ function opponentRequest(id){
         .then(response => response.json())
         .then(data => {
             if (data.status === 'redirect') {// user in this is white
+                document.getElementById(`${whiteTimeLeft/60}-min`).style.backgroundColor = '';
                 clearInterval(intervalId);  
                 console.log(data.user , 'white')
                 colour = 'white'
@@ -201,20 +232,42 @@ function opponentRequest(id){
                 const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
                 console.log(url)
                 socket = new WebSocket(url);
-                timer()
+                console.log('white socket main')
+                timer('opponentRequest start')
                 socket.onmessage = function(e){
                     let socketData = JSON.parse(e.data)
                     console.log(data)
                     if(socketData.type == 'game_status'){
-                        gameMessage(socketData.colour, socketData.message,socketData.status)
+                        handleGameStatus(socketData.colour, socketData.message, socketData.status,data.room_id);
                     }
-                    if(socketData.type == 'move_store' && currentTurn == 'white'){
+                    if(socketData.type == 'draw_offer' && socketData.colour == colour){
+                        console.log(socketData,colour)
+                        console.log('draw on opponenet screen')
+                        document.body.querySelector('.draw-offer-option').style.visibility = 'visible'
+                        currentTurn = (currentTurn == 'white') ? 'black' : 'white'
+                        document.addEventListener('click',(e)=>{
+                            if (e.target.id == 'accept-offer'){
+                                socket.send(JSON.stringify({
+                                    'action' : 'game_status',
+                                    'colour' : colour,
+                                    'message' : 'Mutual Agreement',
+                                    'status' : 'Draw'
+                                }))
+                            }
+                            else document.body.querySelector('.draw-offer-option').style.visibility = 'hidden'
+                        })
+                    }
+                    else if(socketData.type == 'move_store' && currentTurn == 'white'){
                         move_count++;
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = socketData.move;
                         moveStore.appendChild(tempDiv);
                     }
                     else if (socketData.type === 'game_move'  && currentTurn == 'black') {
+                        if (document.body.querySelector('.draw-offer-option').style.visibility == 'visible'){
+                            document.body.querySelector('.draw-offer-option').style.visibility = 'hidden'
+                            document.body.querySelector('.draw-offer').style.visibility = 'hidden'
+                        }
                         handleOpponentMove(socketData);
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
@@ -222,7 +275,8 @@ function opponentRequest(id){
                         })
                         console.log('white to move')
                         currentTurn = 'white'
-                        timer()
+                        console.log('white move socket(white)')
+                        timer('opponentRequest white move')
                     }
                     else{
                         pieces = document.body.querySelectorAll('.piece');
@@ -230,7 +284,8 @@ function opponentRequest(id){
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                         })
                         currentTurn = 'black'
-                        timer()
+                        console.log('white move socket(black)')
+                        timer('opponentRequest black nove')
                     }
                 }  
             }
@@ -254,7 +309,6 @@ function flipBoard(){
 
     whiteTime = document.body.querySelector('.time-player-white');
     blackTime = document.body.querySelector('.time-player-black');
-    updateTimer()
 }
 
 
@@ -287,13 +341,38 @@ function handleOpponentMove(data) {
     
 }
 
+async function handleGameStatus(colour, message, status,room_id) {
+    let game_message = await gameMessage(colour, message, status);
+    if (game_message) {
+        gameOverRedirection(room_id);
+        return;
+    }
+}
+
+function gameOverRedirection(roomId){
+    socket.close()
+    fetch(updateAction, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: new URLSearchParams({
+            'action': 'game_end',
+            'id': roomId
+        })
+    })
+}
+
 
 function updateTimer(){
     whiteTime.innerHTML = `${Math.floor(whiteTimeLeft / 60)}:${('0' + (whiteTimeLeft % 60)).slice(-2)}`;
     blackTime.innerHTML = `${Math.floor(blackTimeLeft / 60)}:${('0' + (blackTimeLeft % 60)).slice(-2)}`;
 }
 
-function timer(){//swapping as we start the timer as soon as he chooses the time button
+function timer(invoker){//swapping as we start the timer as soon as he chooses the time button
+    console.log('status')
+    console.log('invoker' , invoker)
     clearInterval(whiteTimer);
     clearInterval(blackTimer);
     if(currentTurn == 'white'){
@@ -303,10 +382,13 @@ function timer(){//swapping as we start the timer as soon as he chooses the time
                 whiteTimeLeft--;
                 updateTimer();
             }
-            if(whiteTimeLeft == 0){
+            if(whiteTimeLeft == 0 && currentTurn == 'white' ){
                 clearInterval(whiteTimer);
                 gameEndSocket('b','Timeout','Timeout')
+                console.log('invoker' , invoker)
+                console.log('inside timer')
                 gameMessage('b','Timeout','Timeout');
+                return;
             }
         },1000);
     }
@@ -317,10 +399,13 @@ function timer(){//swapping as we start the timer as soon as he chooses the time
                 blackTimeLeft--;
                 updateTimer();
             }
-            if(blackTimeLeft == 0){
+            if(blackTimeLeft == 0 && currentTurn == 'black'){
                 clearInterval(blackTimer);
                 gameEndSocket('w','Timeout','Timeout')
+                console.log('invoker' , invoker)
+                console.log('inside timer')
                 gameMessage('w','Timeout','Timeout');
+                return;
             }
         },1000);
     }
@@ -357,9 +442,8 @@ function dropHandler(e){
     else{
         king = document.body.querySelector('.bk');
         kingOpp = document.body.querySelector('.wK');
-    }    let kingInitial = king.parentNode.id;
-    console.log(currentTurn)
-    // timer();
+    }    
+    let kingInitial = king.parentNode.id;
     if (isValid(piece_selected,initialPosition,finalPosition,target,draggedPiece,false) && draggedPiece) {
         const existingPiece = target.querySelector('.piece');
         // checking for empty square or opp square
@@ -492,21 +576,27 @@ else{
 
 function gameButton(e){
     if(e.target.id == 'resign-button'){
-        gameEndSocket(piece_selected[0], 'Resign','Resign')
+        console.log('resigned')
         setTimeout(() => {
-            gameMessage(piece_selected[0], 'Resign','Resign');
+            colour = (colour[0] == 'w') ? 'b' : 'w'
+            gameMessage(colour[0], 'Resign','Resign');
+            gameEndSocket(colour[0], 'Resign','Resign')
           }, "500");
     }
     else if(e.target.id == 'draw-button'){
-        setTimeout(() => {
-            alert('draw offer sent');
-            disableAllEvents();
-          }, "500");
+        let drawOfferColour = (colour[0] == 'w') ? 'black' : 'white'
+        currentTurn = (currentTurn == 'white') ? 'black' : 'white'
+        console.log(drawOfferColour)
+        socket.send(JSON.stringify({
+            'action' : 'draw_offer',
+            'colour' : drawOfferColour
+        }))
     }
 }
 document.addEventListener('click',gameButton);
 
 async function gameMessage(colour,message,status){
+    console.log('message',message)
     let pieceColour = (colour == 'w') ? 'White' : 'Black';
     if (message == 'Checkmate' || message == 'Resign' || message == 'Timeout') pieceColour += ' wins by ' + message;
     else pieceColour = 'Game drawn by ' + message;
@@ -514,28 +604,36 @@ async function gameMessage(colour,message,status){
     gameResultBox.style.visibility = 'visible';
     gameResultBox.classList.add('animate');
     for(let i = 0; i < resultText.length; i++) resultText[i].innerHTML = messages[i];
-    const close = await resultBoxClose();
-    if (close) disableAllEvents();
+    return new Promise(async (resolve) => {
+        const close = await resultBoxClose(); 
+        if (close) {
+            disableAllEvents(); 
+            resolve(true); 
+        }
+    });
 }
 
 function resultBoxClose(){
     return new Promise((resolve) => {
         document.getElementById('close-icon').addEventListener('click', function() {
-        gameResultBox.style.visibility = 'hidden';
-        gameResultBox.classList.remove('animate');
-        for(let i = 0; i < resultText.length; i++) resultText[i].innerHTML = '';
-        resolve(true);
+            location.reload()
+            gameResultBox.style.visibility = 'hidden';
+            gameResultBox.classList.remove('animate');
+            for(let i = 0; i < resultText.length; i++) resultText[i].innerHTML = '';
+            resolve(true);
         } ,{ once: true });
     });
 }
 
 function gameEndSocket(colour,message,status){
-    socket.send(JSON.stringify({
+    if(socket){
+        socket.send(JSON.stringify({
         'action' : 'game_status',
         'colour' : colour,
         'message' : message,
         'status' : status
     }))
+    }
 }
 
 function disableAllEvents() {

@@ -25,6 +25,7 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 def user_login(request):
+    print('inside login method')
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -48,6 +49,7 @@ def user_logout(request):
 
 @login_required
 def play(request , room_id = None):
+    print('entering' , room_id)
     username = request.user.username
     if room_id:
         return render(request, 'home.html',{'username' : username , 'room_id' : room_id})
@@ -72,28 +74,41 @@ def update_action(request):
                 userinfo.activity = 'in game'
                 userinfo.save()
                 print('user2',request.user.username , 'black')
-                return JsonResponse({'status': 'redirect', 'room_id': room_id , 'opponent' :GameInfo.objects.get(user2 = username).user1 , 'user' : username,
+                return JsonResponse({'status': 'redirect', 'room_id': room_id , 'opponent' :opponent , 'user' : username,
                                      'colour' : 'black'})
             else:
                 return JsonResponse({'status': 'waiting_for_opponent' , 'room_id' : None})
         elif action == 'game_end':
             userinfo = UserInfo.objects.get(username=request.user.username)
             userinfo.activity = 'logged in'  
+            gameinfo = GameInfo.objects.get(gameId = request.POST.get('id'))
+            gameinfo.gameStatus = 'game over'
+            gameinfo.save()
             userinfo.save()
-            return JsonResponse({'status': 'game_end'})
-    return render(request, 'home.html', {'username': username})
+            print('saved into db')
+    return render(request, 'home.html', {'username': request.user.username })
+    
 
 @csrf_exempt
 @login_required
 def checkOpp(request):#user 1 is black user 2 is white
     if GameInfo.objects.filter(user1=request.user.username).exists():#user1 contians opponents name
-        if GameInfo.objects.get(user1 = request.user.username).gameStatus == 'ongoing' and UserInfo.objects.get(username = request.user.username).activity != 'in game':
-            print('user1',request.user.username , 'white')
-            userinfo = UserInfo.objects.get(username=request.user.username)
-            userinfo.activity = 'in game'
-            userinfo.save()
-            return JsonResponse({'status': 'redirect', 'room_id': GameInfo.objects.get(user1 = request.user.username).gameId , 'user' : request.user.username,
-                                 'opponent' :GameInfo.objects.get(user1 = request.user.username).user2 , 'colour' : 'white'})
+        ongoing_games = GameInfo.objects.filter(gameStatus = 'ongoing')
+        for game in ongoing_games:
+            print(game)
+            if game.user1 == request.user.username:
+                userinfo = UserInfo.objects.get(username=request.user.username)
+                if userinfo.activity != 'in game':
+                    print('user1', request.user.username, 'white')
+                    userinfo.activity = 'in game'
+                    userinfo.save()
+                    return JsonResponse({
+                        'status': 'redirect',
+                        'room_id': game.gameId,
+                        'user': request.user.username,
+                        'opponent': game.user2, 
+                        'colour': 'white'
+                    })
     return render(request, 'home.html', {'username': request.user.username })
 
 
