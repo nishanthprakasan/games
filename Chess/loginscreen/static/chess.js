@@ -1,5 +1,4 @@
 //lower case - black upper case - white
-// NEED TO FIX DRAW OFFER
 let currentTurn = 'white'; 
 let move_count = 0;
 let fiftyMoveDrawCount = 0;
@@ -80,7 +79,6 @@ function timeSelection(e){
 
 function newGame(e){
     return new Promise((resolve) => {
-		console.log(e.target.id);
         if(e.target.id == 'new-game') resolve(true);
     });
 }
@@ -119,7 +117,6 @@ async function newGameControl(e) {
             if (data.status === 'redirect') {//user in this should be black
                 document.getElementById(`${whiteTimeLeft/60}-min`).style.backgroundColor = '';
                 colour = 'black'
-                console.log(data.user , 'black')
                 document.body.querySelector('.player-details-black').innerHTML = data.opponent
                 flipBoard()
                 pieces = document.body.querySelectorAll('.piece');
@@ -129,21 +126,15 @@ async function newGameControl(e) {
                 })
                 document.body.querySelector('.game').style.pointerEvents = 'auto';
                 const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
-                console.log(url)
                 socket = new WebSocket(url);
-                console.log('black socket')
                 timer('newGameControl start')
                 socket.onmessage = function(e){
                     let socketData = JSON.parse(e.data)
-                    console.log(socketData)
                     if(socketData.type == 'game_status'){
                         handleGameStatus(socketData.colour, socketData.message, socketData.status,data.room_id);
                     }
                     if(socketData.type == 'draw_offer' && socketData.colour == colour){
-                        console.log(socketData,colour)
-                        console.log('draw on opponenet screen')
                         document.body.querySelector('.draw-offer-option').style.visibility = 'visible'
-                        // currentTurn = (currentTurn == 'white') ? 'black' : 'white'
                         document.addEventListener('click',(e)=>{
                             if (e.target.id == 'accept-offer'){
                                 socket.send(JSON.stringify({
@@ -177,31 +168,25 @@ async function newGameControl(e) {
                             document.body.querySelector('.draw-offer-option').style.visibility = 'hidden'
                             document.body.querySelector('.draw-offer').style.visibility = 'hidden'
                         }
-                        console.log('black to move')
                         handleOpponentMove(socketData);
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
                             if(piece.classList[1][0] == 'b') piece.classList.remove('disabled')
                         })
                         currentTurn ='black'
-                        console.log('black move socket(black)')
                         timer('newGameControl white move')
-                        console.log('inside socket' , currentTurn)
                     }
                     else if(socketData.type != 'draw_offer'){
-                        console.log(socketData)
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                         })
                         currentTurn = 'white'
-                        console.log('white move socket(black)')
                         timer('newGameControl black move')
                     }
                 }
             } 
             else if (data.status === 'waiting_for_opponent') {
-                console.log('Waiting for opponent...');
                 opponentRequest(data.room_id)
             }
         });
@@ -209,7 +194,6 @@ async function newGameControl(e) {
 }
 
 async function opponentRequest(id){
-    console.log('looking')
     let intervalId = setInterval(() => {
         fetch(checkOpp, {
             method: 'POST',
@@ -228,26 +212,19 @@ async function opponentRequest(id){
             if (data.status === 'redirect') {// user in this is white
                 document.getElementById(`${whiteTimeLeft/60}-min`).style.backgroundColor = '';
                 clearInterval(intervalId);  
-                console.log(data.user , 'white')
                 colour = 'white'
                 document.body.querySelector('.game').style.pointerEvents = 'auto';
                 document.body.querySelector('.player-details-black').innerHTML = data.opponent
                 const url = `ws://127.0.0.1:8000/ws/play/${data.room_id}/`
-                console.log(url)
                 socket = new WebSocket(url);
-                console.log('white socket main')
                 timer('opponentRequest start')
                 socket.onmessage = function(e){
                     let socketData = JSON.parse(e.data)
-                    console.log(data)
                     if(socketData.type == 'game_status'){
                         handleGameStatus(socketData.colour, socketData.message, socketData.status,data.room_id);
                     }
                     if(socketData.type == 'draw_offer' && socketData.colour == colour){
-                        console.log(socketData,colour)
-                        console.log('draw on opponenet screen')
                         document.body.querySelector('.draw-offer-option').style.visibility = 'visible'
-                        // currentTurn = (currentTurn == 'white') ? 'black' : 'white'
                         document.addEventListener('click',(e)=>{
                             if (e.target.id == 'accept-offer'){
                                 socket.send(JSON.stringify({
@@ -276,19 +253,15 @@ async function opponentRequest(id){
                         pieces.forEach(piece =>{
                             if(piece.classList[1][0] == 'w') piece.classList.remove('disabled')
                         })
-                        console.log('white to move')
                         currentTurn = 'white'
-                        console.log('white move socket(white)')
                         timer('opponentRequest white move')
                     }
                     else if(socketData.type != 'draw_offer'){
-                        console.log(socketData)
                         pieces = document.body.querySelectorAll('.piece');
                         pieces.forEach(piece =>{
                             if(!piece.classList.contains('disabled')) piece.classList.add('disabled')
                         })
                         currentTurn = 'black'
-                        console.log('white move socket(black)')
                         timer('opponentRequest black nove')
                     }
                 }  
@@ -322,11 +295,9 @@ function handleOpponentMove(data) {
         const initialPos = data.initialPos;
         const finalPos = data.finalPos;
         const castle = data.castle;
-        console.log(data.piece)
         const pieceElement = document.getElementById(`${initialPos}`);
         const finalSquare = document.getElementById(`${finalPos}`);
         if(pieceElement.children[0]){
-            console.log(finalSquare)
             const existingPiece = finalSquare.querySelector('.piece');
             if (existingPiece && existingPiece.classList[1][0] != piece[0]) {
                 existingPiece.remove();
@@ -335,9 +306,6 @@ function handleOpponentMove(data) {
             if(castle[0]){
                 const initial = document.getElementById(castle[1])
                 const final = document.getElementById(castle[2])
-                console.log(initial)
-                console.log(final)
-                console.log(initial.children[0])
                 final.appendChild(initial.children[0])
             }
         }
@@ -374,9 +342,7 @@ function updateTimer(){
     blackTime.innerHTML = `${Math.floor(blackTimeLeft / 60)}:${('0' + (blackTimeLeft % 60)).slice(-2)}`;
 }
 
-function timer(invoker){//swapping as we start the timer as soon as he chooses the time button
-    console.log('status')
-    console.log('invoker' , invoker)
+function timer(invoker){
     clearInterval(whiteTimer);
     clearInterval(blackTimer);
     if(currentTurn == 'white'){
@@ -389,8 +355,6 @@ function timer(invoker){//swapping as we start the timer as soon as he chooses t
             if(whiteTimeLeft == 0 && currentTurn == 'white' ){
                 clearInterval(whiteTimer);
                 gameEndSocket('b','Timeout','Timeout')
-                console.log('invoker' , invoker)
-                console.log('inside timer')
                 gameMessage('b','Timeout','Timeout');
                 return;
             }
@@ -406,8 +370,6 @@ function timer(invoker){//swapping as we start the timer as soon as he chooses t
             if(blackTimeLeft == 0 && currentTurn == 'black'){
                 clearInterval(blackTimer);
                 gameEndSocket('w','Timeout','Timeout')
-                console.log('invoker' , invoker)
-                console.log('inside timer')
                 gameMessage('w','Timeout','Timeout');
                 return;
             }
@@ -426,7 +388,6 @@ function dragOverHandler(e){
 };
 
 function dropHandler(e){
-    console.log('inside dropHandler',currentTurn)
     e.preventDefault();
     // finding target square
     if (move_count == 0) clearInterval(whiteTimer);
@@ -506,7 +467,6 @@ function dropHandler(e){
                 moveStore.appendChild(moveElement);
             }
             move_count++;
-            console.log(move_count)
             const moveElement = document.createElement('div');
             moveElement.innerHTML = storeMoves(temp);
             moves.push(moveElement.innerHTML);
@@ -580,7 +540,6 @@ else{
 
 function gameButton(e){
     if(e.target.id == 'resign-button'){
-        console.log('resigned')
         setTimeout(() => {
             colour = (colour[0] == 'w') ? 'b' : 'w'
             gameMessage(colour[0], 'Resign','Resign');
@@ -589,7 +548,6 @@ function gameButton(e){
     }
     else if(e.target.id == 'draw-button'){
         let drawOfferColour = (colour[0] == 'w') ? 'black' : 'white'
-        console.log(drawOfferColour)
         socket.send(JSON.stringify({
             'action' : 'draw_offer',
             'colour' : drawOfferColour
@@ -599,7 +557,6 @@ function gameButton(e){
 document.addEventListener('click',gameButton);
 
 async function gameMessage(colour,message,status){
-    console.log('message',message)
     let pieceColour = (colour == 'w') ? 'White' : 'Black';
     if (message == 'Checkmate' || message == 'Resign' || message == 'Timeout') pieceColour += ' wins by ' + message;
     else pieceColour = 'Game drawn by ' + message;

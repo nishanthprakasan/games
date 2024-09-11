@@ -25,7 +25,6 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 def user_login(request):
-    print('inside login method')
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -49,7 +48,6 @@ def user_logout(request):
 
 @login_required
 def play(request , room_id = None):
-    print('entering' , room_id)
     username = request.user.username
     if room_id:
         return render(request, 'home.html',{'username' : username , 'room_id' : room_id})
@@ -69,12 +67,10 @@ def update_action(request):
             opponent , room_id = findingOpponent(username)
             userinfo.save()
             opponent, room_id = findingOpponent(username)
-            print(room_id,opponent)
             if opponent and userinfo.activity != 'in game' and request.POST.get('time') == UserInfo.objects.get(username = opponent).time_control:
                 GameInfo.objects.create(gameId = room_id, user1 = opponent,user2 = username,gameStatus = 'ongoing')
                 userinfo.activity = 'in game'
                 userinfo.save()
-                print('user2',request.user.username , 'black')
                 return JsonResponse({'status': 'redirect', 'room_id': room_id , 'opponent' :opponent , 'user' : username,
                                      'colour' : 'black'})
             else:
@@ -87,7 +83,6 @@ def update_action(request):
             gameinfo.gameStatus = 'game over'
             gameinfo.save()
             userinfo.save()
-            print('saved into db')
     return render(request, 'home.html', {'username': request.user.username })
     
 
@@ -97,11 +92,9 @@ def checkOpp(request):#user 1 is black user 2 is white
     if GameInfo.objects.filter(user1=request.user.username).exists():#user1 contians opponents name
         ongoing_games = GameInfo.objects.filter(gameStatus = 'ongoing')
         for game in ongoing_games:
-            print(game)
             if game.user1 == request.user.username:
                 userinfo = UserInfo.objects.get(username=request.user.username)
                 if userinfo.activity != 'in game' and request.POST.get('time') == UserInfo.objects.get(username = game.user2).time_control:
-                    print('user1', request.user.username, 'white')
                     userinfo.activity = 'in game'
                     userinfo.save()
                     return JsonResponse({

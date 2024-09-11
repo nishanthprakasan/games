@@ -71,9 +71,7 @@ class ChessConsumer(WebsocketConsumer):
                 }
             )
 
-    # Receive message from room group
     def game_move(self, event):
-        # Send the move data to the WebSocket
         self.send(text_data=json.dumps({
             'type': 'game_move',
             'piece': event['piece'],
@@ -106,7 +104,6 @@ class ChessConsumer(WebsocketConsumer):
         }))
 
     def draw_offer(self,event):
-        print(event['colour'])
         self.send(text_data=json.dumps({
             'type' : 'draw_offer',
             'colour' : event['colour']
